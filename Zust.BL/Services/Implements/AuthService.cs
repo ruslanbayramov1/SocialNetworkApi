@@ -35,7 +35,14 @@ public class AuthService : IAuthService
 
         var entity = _mapper.Map<User>(dto);
         entity.PasswordHash = BCrypt.Net.BCrypt.EnhancedHashPassword(dto.Password);
-        entity.Role = (int)Roles.Member;
+        if (await _repo.GetAllCountAsync() == 0)
+        { 
+            entity.Role = (int)Roles.Admin;
+        }
+        else
+        {
+            entity.Role = (int)Roles.Member;
+        }
 
         await _repo.AddAsync(entity);
         await _repo.SaveAsync();

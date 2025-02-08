@@ -18,6 +18,10 @@ public class PostLikeConfiguration : IEntityTypeConfiguration<PostLike>
             .OnDelete(DeleteBehavior.NoAction);
 
         builder
+            .Property(x => x.CreatedAt)
+            .HasDefaultValueSql("GETDATE()");
+
+        builder
             .HasOne(x => x.LikedUser)
             .WithMany(u => u.PostLikes)
             .HasForeignKey(x => x.LikedUserId);

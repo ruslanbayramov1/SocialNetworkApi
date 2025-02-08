@@ -1,20 +1,21 @@
 ﻿using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Zust.BL.DTOs.Auths;
 using Zust.BL.DTOs.BloodGroups;
 using Zust.BL.DTOs.Genders;
 using Zust.BL.DTOs.Languages;
 using Zust.BL.DTOs.Occupations;
 using Zust.BL.DTOs.RelationStatuses;
-using Zust.BL.Exceptions.Common;
 using Zust.BL.ExternalServices.Implements;
 using Zust.BL.ExternalServices.Interfaces;
+using Zust.BL.Options;
 using Zust.BL.Services.Implements;
 using Zust.BL.Services.Interfaces;
 using Zust.Core.Enums;
+using Zust.Core.Interfaces.Repositories;
 
 namespace Zust.BL;
 
@@ -27,15 +28,15 @@ public static class ServiceRegistration
         services.AddScoped<IBloodGroupService, BloodGroupService>();
         services.AddScoped<IOccupationService, OccupationService>();
         services.AddScoped<IRelationStatusService, RelationStatusService>();
-        //services.AddScoped<IUserDataService, UserDataService>();
+        services.AddScoped<IUserService, UserService>();
         services.AddScoped<IPostService, PostService>();
-        //services.AddScoped<IAzureCloudBlobService, AzureBlobCloudService>();
         services.AddScoped<IAuthService, AuthService>();
-        services.AddScoped<IJwtService, JwtService>();
 
         // external services
-        //services.AddScoped<IUserClaimsService, UserClaimsService>();
-        //services.AddScoped<IEmailService, EmailService>();
+        services.AddScoped<IUserClaimService, UserClaimService>();
+        services.AddScoped<IJwtService, JwtService>();
+        services.AddScoped<IAzureCloudBlobService, AzureBlobCloudService>();
+        services.AddScoped<IEmailService, EmailService>();
 
         return services;
     }
@@ -46,20 +47,19 @@ public static class ServiceRegistration
         return services;
     }
 
-    public static IApplicationBuilder UseSeedData(this IApplicationBuilder app)
+    public static IApplicationBuilder UseSeedData(this IApplicationBuilder app, IConfiguration conf)
     {
         using (var scope = app.ApplicationServices.CreateScope())
         {
-            //var _userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
-            //var _roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+            var _authService = scope.ServiceProvider.GetRequiredService<IAuthService>();
+            var _userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
             var _genderService = scope.ServiceProvider.GetRequiredService<IGenderService>();
             var _languageService = scope.ServiceProvider.GetRequiredService<ILanguageService>();
             var _bloodGroupService = scope.ServiceProvider.GetRequiredService<IBloodGroupService>();
             var _relationStatusService = scope.ServiceProvider.GetRequiredService<IRelationStatusService>();
             var _occupationService = scope.ServiceProvider.GetRequiredService<IOccupationService>();
 
-            //CreateRoles(_roleManager).Wait();
-            //CreateAdmin(_userManager).Wait();
+            CreateAdmin(_authService, _userRepository, conf).Wait();
 
             CreateLanguages(_languageService).Wait();
             CreateGenders(_genderService).Wait();
@@ -78,36 +78,31 @@ public static class ServiceRegistration
         return services;
     }
 
-    //private static async Task CreateRoles(RoleManager<IdentityRole> _roleManager)
-    //{
-    //    int res = await _roleManager.Roles.CountAsync();
+    private static async Task CreateAdmin(IAuthService _authService, IUserRepository _userRepository, IConfiguration _conf)
+    {
+        AdminOption opt = new();
+        opt.FirstName = _conf.GetSection(AdminOption.Position)[nameof(opt.FirstName)]!;
+        opt.LastName = _conf.GetSection(AdminOption.Position)[nameof(opt.LastName)]!;
+        opt.UserName = _conf.GetSection(AdminOption.Position)[nameof(opt.UserName)]!;
+        opt.Email = _conf.GetSection(AdminOption.Position)[nameof(opt.Email)]!;
+        opt.Password = _conf.GetSection(AdminOption.Position)[nameof(opt.Password)]!;
 
-    //    if (res == 0)
-    //    {
-    //        foreach (var role in Enum.GetValues(typeof(Roles)))
-    //        {
-    //            await _roleManager.CreateAsync(new IdentityRole(role.ToString()));
-    //        }
-    //    }
-    //}
+        if (!await _userRepository.IsExistsAsync(x => x.UserName == opt.UserName))
+        {
+            var userDto = new RegisterDto
+            {
+                UserName = opt.UserName,
+                FirstName = opt.FirstName,
+                LastName = opt.LastName,
+                Email = opt.Email,
+                Password = opt.Password,
+                ConfirmPassword = opt.Password,
+                ConfirmPrivacyPolicy = true
+            };
 
-    //private static async Task CreateAdmin(UserManager<User> _userManager)
-    //{
-    //    if (!await _userManager.Users.AnyAsync(x => x.UserName == "admin"))
-    //    {
-    //        User user = new User
-    //        {
-    //            UserName = "admin",
-    //            FirstName = "admin",
-    //            LastName = "admin",
-    //            Email = "admin@gmail.com",
-    //        };
-    //        user.EmailConfirmed = true;
-
-    //        await _userManager.CreateAsync(user, "Admin_123");
-    //        await _userManager.AddToRoleAsync(user, nameof(Roles.Admin));
-    //    }
-    //}
+            await _authService.RegisterAsync(userDto);
+        }
+    }
 
     private static async Task CreateLanguages(ILanguageService _languageService)
     {

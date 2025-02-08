@@ -16,7 +16,7 @@ public class EmailService : IEmailService
     public EmailService(IHttpContextAccessor http, IOptions<SmtpOption> opt)
     {
         SmtpOption _opt = opt.Value;
-        _httpContext = http.HttpContext;
+        _httpContext = http.HttpContext!;
 
         _client = new SmtpClient(_opt.Host, _opt.Port);
         _client.EnableSsl = true;

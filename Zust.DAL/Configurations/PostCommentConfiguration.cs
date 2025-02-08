@@ -18,6 +18,10 @@ public class PostCommentConfiguration : IEntityTypeConfiguration<PostComment>
             .OnDelete(DeleteBehavior.NoAction);
 
         builder
+            .Property(x => x.CreatedAt)
+            .HasDefaultValueSql("GETDATE()");
+
+        builder
             .HasOne(x => x.ParentComment)
             .WithMany(x => x.Replies)
             .HasForeignKey(x => x.ParentCommentId);

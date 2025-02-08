@@ -17,6 +17,10 @@ public class PostConfiguration : IEntityTypeConfiguration<Post>
             .HasForeignKey(x => x.PostedUserId);
 
         builder
+            .Property(x => x.CreatedAt)
+            .HasDefaultValueSql("GETDATE()");
+
+        builder
             .Property(x => x.Content)
             .HasMaxLength(128)
             .IsRequired();

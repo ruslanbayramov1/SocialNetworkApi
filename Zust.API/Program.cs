@@ -35,7 +35,7 @@ app.UseHttpsRedirection();
 app.UseZustExceptionHandler();
 
 app.UseAuthorization();
-app.UseSeedData();
+app.UseSeedData(builder.Configuration);
 
 app.MapControllers();
 

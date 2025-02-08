@@ -4,6 +4,6 @@ namespace Zust.BL.Services.Interfaces;
 
 public interface IPostService
 {
-    //Task CreatePostAsync(PostCreateDto vm);
-    //Task<List<PostGetDto>> GetProfilePosts();
+    Task CreatePostAsync(PostCreateDto vm);
+    Task<List<PostGetDto>> GetProfilePosts();
 }

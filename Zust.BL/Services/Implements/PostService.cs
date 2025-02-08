@@ -1,56 +1,69 @@
-﻿using Zust.BL.Services.Interfaces;
+﻿using Zust.BL.Constants;
+using Zust.BL.DTOs.Posts;
+using Zust.BL.Enums;
+using Zust.BL.Exceptions.Common;
+using Zust.BL.Exceptions.Files;
+using Zust.BL.ExternalServices.Interfaces;
+using Zust.BL.Helpers;
+using Zust.BL.Services.Interfaces;
+using Zust.Core.Entities;
+using Zust.Core.Interfaces.Repositories;
 
 namespace Zust.BL.Services.Implements;
 
 public class PostService : IPostService
 {
-    //private readonly IPostRepository _postRepository;
-    //private readonly IUserClaimsService _userClaimsService;
-    //private readonly UserManager<User> _userManager;
-    //private readonly IAzureCloudBlobService _azureCloudBlobService;
-    //public PostService(IPostRepository postRepository, IUserClaimsService userClaimsService, UserManager<User> userManager, IAzureCloudBlobService azureCloudBlobService)
-    //{
-    //    _postRepository = postRepository;
-    //    _userClaimsService = userClaimsService;
-    //    _userManager = userManager;
-    //    _azureCloudBlobService = azureCloudBlobService;
-    //}
+    private readonly IPostRepository _postRepository;
+    private readonly IUserClaimService _userClaimService;
+    private readonly IUserRepository _userRepo;
+    private readonly IAzureCloudBlobService _azureCloudBlobService;
+    public PostService(IPostRepository postRepository, IUserClaimService userClaimService, IUserRepository userRepo, IAzureCloudBlobService azureCloudBlobService)
+    {
+        _postRepository = postRepository;
+        _userClaimService = userClaimService;
+        _userRepo = userRepo;
+        _azureCloudBlobService = azureCloudBlobService;
+    }
 
-    //public async Task CreatePostAsync(PostCreateDto vm)
-    //{
-    //    var user = await _userManager.FindByIdAsync(_userClaimsService.GetUserId());
-    //    if (user == null) throw new NotFoundException<User>();
+    public async Task CreatePostAsync(PostCreateDto vm)
+    {
+        var user = await _userRepo.GetByIdAsync(Guid.Parse(_userClaimService.GetId()));
+        if (user == null) throw new NotFoundException<User>();
 
-    //    string? imageUrl = null;
-    //    if (vm.Image != null)
-    //    {
-    //        if (!vm.Image.IsValidSize() || !vm.Image.IsValidType())
-    //        {
-    //            throw new Exception();
-    //        }
-    //        imageUrl = await _azureCloudBlobService.UploadImageAsync(vm.Image);
-    //    }
+        string? imageUrl = null;
+        if (vm.Image != null)
+        {
+            if (!vm.Image.IsValidSize())
+            {
+                throw new InvalidFileSizeException($"The image size is invalid. Maximum allowed size is {FileConstant.ImageSize / 1024} mb");
+            }
+            else if(!vm.Image.IsValidType())
+            {
+                throw new InvalidFileTypeException($"The image type is invalid. Allowed ones are any types of images.");
+            }
+            imageUrl = await _azureCloudBlobService.UploadImageAsync(vm.Image, AzureFolderDestinations.Posts);
+        }
 
-    //    var model = new Post
-    //    {
-    //        Content = vm.Content,
-    //        PostedUserId = user.Id,
-    //        ImageUrl = imageUrl,
-    //    };
-    //    await _postRepository.AddAsync(model);
-    //    await _postRepository.SaveAsync();
-    //}
+        var model = new Post
+        {
+            Content = vm.Content,
+            PostedUserId = user.Id,
+            ImageUrl = imageUrl,
+        };
+        await _postRepository.AddAsync(model);
+        await _postRepository.SaveAsync();
+    }
 
-    //public Task<List<PostGetDto>> GetProfilePosts()
-    //{
-    //    var data = _postRepository.GetAllAsync(x => new PostGetDto
-    //    {
-    //        ImageUrl = x.ImageUrl,
-    //        Content = x.Content,
-    //        LikeCount = x.Likes.Count,
-    //        VideoUrl = x.VideoUrl,
-    //    });
+    public Task<List<PostGetDto>> GetProfilePosts()
+    {
+        var data = _postRepository.GetAllAsync(x => new PostGetDto
+        {
+            ImageUrl = x.ImageUrl,
+            Content = x.Content,
+            LikeCount = x.Likes.Count,
+            VideoUrl = x.VideoUrl,
+        });
 
-    //    return data;
-    //}
+        return data;
+    }
 }

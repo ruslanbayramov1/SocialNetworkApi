@@ -21,9 +21,9 @@ public static class ServiceRegistration
     public static IServiceCollection AddJwtAuthentication(this IServiceCollection services, IConfiguration configuration)
     {
         JwtOption jwtOpt = new();
-        jwtOpt.Issuer = configuration.GetSection("JwtOptions")["Issuer"]!;
-        jwtOpt.Audience = configuration.GetSection("JwtOptions")["Audience"]!;
-        jwtOpt.SecretKey = configuration.GetSection("JwtOptions")["SecretKey"]!;
+        jwtOpt.Issuer = configuration.GetSection(JwtOption.Position)[nameof(jwtOpt.Issuer)]!;
+        jwtOpt.Audience = configuration.GetSection(JwtOption.Position)[nameof(jwtOpt.Audience)]!;
+        jwtOpt.SecretKey = configuration.GetSection(JwtOption.Position)[nameof(jwtOpt.SecretKey)]!;
 
         var signInKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOpt.SecretKey));
 
