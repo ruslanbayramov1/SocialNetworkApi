@@ -1,6 +1,8 @@
-﻿namespace Zust.BL.ExternalServices.Interfaces;
+﻿using Zust.BL.Enums;
+
+namespace Zust.BL.ExternalServices.Interfaces;
 
 public interface IEmailService
 {
-    Task SendEmailConfirmationAsync(string username, string code, string userEmail); 
+    Task SendCodeToEmailAsync(string username, string code, string userEmail, EmailTypes emailType); 
 }

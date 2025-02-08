@@ -1,6 +1,6 @@
-﻿namespace Zust.BL.Constants;
+﻿namespace Zust.DAL.Settings;
 
-public static class UserConstant
+public static class UserSetting
 {
     public const int UserNameMinLength = 4;
     public const int UserNameLength = 32;
@@ -9,5 +9,4 @@ public static class UserConstant
     public const int EmailLength = 320;
     public const int FirstNameLength = 64;
     public const int LastNameLength = 64;
-    public const int CommonLength = 128;
 }

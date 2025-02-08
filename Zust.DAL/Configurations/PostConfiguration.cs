@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Zust.Core.Entities;
+using Zust.DAL.Settings;
 
 namespace Zust.DAL.Configurations;
 
@@ -22,15 +23,15 @@ public class PostConfiguration : IEntityTypeConfiguration<Post>
 
         builder
             .Property(x => x.Content)
-            .HasMaxLength(128)
+            .HasMaxLength(PostSetting.ContentLength)
             .IsRequired();
 
         builder
             .Property(x => x.ImageUrl)
-            .HasMaxLength(128);
+            .HasMaxLength(PostSetting.ImageUrlLength);
 
         builder
             .Property(x => x.VideoUrl)
-            .HasMaxLength(128);
+            .HasMaxLength(PostSetting.VideoUrlLength);
     }
 }

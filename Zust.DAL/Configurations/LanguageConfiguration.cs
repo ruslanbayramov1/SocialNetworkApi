@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Zust.Core.Entities;
+using Zust.DAL.Settings;
 
 namespace Zust.DAL.Configurations;
 
@@ -21,7 +22,7 @@ public class LanguageConfiguration : IEntityTypeConfiguration<Language>
 
         builder
             .Property(x => x.Name)
-            .HasMaxLength(32)
+            .HasMaxLength(LanguageSetting.NameLength)
             .IsRequired(true);
 
         builder

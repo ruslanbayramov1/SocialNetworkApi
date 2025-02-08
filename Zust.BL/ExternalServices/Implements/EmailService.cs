@@ -3,6 +3,7 @@ using Microsoft.Extensions.Options;
 using System.Net;
 using System.Net.Mail;
 using Zust.BL.Constants;
+using Zust.BL.Enums;
 using Zust.BL.ExternalServices.Interfaces;
 using Zust.BL.Options;
 
@@ -24,16 +25,32 @@ public class EmailService : IEmailService
 
         _from = new MailAddress(_opt.Sender, "Zust");
     }
-    public Task SendEmailConfirmationAsync(string username, string code, string userEmail)
+    public Task SendCodeToEmailAsync(string username, string code, string userEmail, EmailTypes emailType)
     {
         MailAddress to = new MailAddress(userEmail);
 
         MailMessage message = new MailMessage(_from, to);
-        string url = _httpContext.Request.Scheme + "://" + _httpContext.Request.Host + $"/Auth/VerifyEmail?code={code}&user={username}";
 
         message.IsBodyHtml = true;
-        message.Body = EmailTemplate.ConfirmTemplate.Replace("__$appName", "Zust").Replace("__$verifyLink", url).Replace("__$userName", username);
-        message.Subject = "Zust Email Confirmation";
+
+        if (emailType == EmailTypes.Confirmation)
+        { 
+            message.Body = EmailTemplate.ConfirmTemplate.Replace("__$appName", "Zust").Replace("__$code", code).Replace("__$userName", username);
+            message.Subject = "Zust Email Confirmation";
+        }
+
+        else if (emailType == EmailTypes.ForgotPassword)
+        { 
+            message.Body = EmailTemplate.ForgotPasswordTemplate.Replace("__$appName", "Zust").Replace("__$code", code).Replace("__$userName", username);
+            message.Subject = "Zust Forgot Password";
+        }
+
+        else if (emailType == EmailTypes.NewPassword)
+        { 
+            message.Body = EmailTemplate.NewPasswordTemplate.Replace("__$appName", "Zust").Replace("__$code", code).Replace("__$userName", username);
+            message.Subject = "Zust New Password";
+        }
+
 
         _client.Send(message);
 

@@ -21,8 +21,8 @@ public class UserClaimService : IUserClaimService
     public string GetEmail()
         => _httpContext.User.FindFirst(nameof(UserClaimTypes.Email))?.Value!;
 
-    public string GetId()
-        => _httpContext.User.FindFirst(nameof(UserClaimTypes.Id))?.Value!;
+    public Guid GetId()
+        => Guid.Parse(_httpContext.User.FindFirst(nameof(UserClaimTypes.Id))?.Value!);
 
     public string GetFirstName()
         => _httpContext.User.FindFirst(nameof(UserClaimTypes.FirstName))?.Value!;

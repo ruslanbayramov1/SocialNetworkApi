@@ -27,6 +27,7 @@ public class User : BaseEntity
     public string? Address { get; set; }
     public string? ProfileImageUrl { get; set; } = "https://finalprojectolympus.blob.core.windows.net/images/defaultuserimage.jpg";
     public string? CoverImageUrl { get; set; } = "https://finalprojectolympus.blob.core.windows.net/images/defaultusercover.jpg";
+    public bool IsEmailConfirmed { get; set; }
 
     public ICollection<Post> Posts { get; set; } = new List<Post>(); // users himself Posts
     public ICollection<PostComment> PostComments { get; set; } = new List<PostComment>(); // users commented posts (comments on someones post)

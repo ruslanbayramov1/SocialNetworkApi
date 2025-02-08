@@ -9,6 +9,7 @@ using Zust.BL.DTOs.Genders;
 using Zust.BL.DTOs.Languages;
 using Zust.BL.DTOs.Occupations;
 using Zust.BL.DTOs.RelationStatuses;
+using Zust.BL.Enums;
 using Zust.BL.ExternalServices.Implements;
 using Zust.BL.ExternalServices.Interfaces;
 using Zust.BL.Options;
@@ -102,6 +103,33 @@ public static class ServiceRegistration
 
             await _authService.RegisterAsync(userDto);
         }
+    }
+
+    public static IServiceCollection AddCacheServices(this IServiceCollection service, IConfiguration _conf, CacheTypes type = CacheTypes.Redis)
+    {
+        if (type == CacheTypes.Redis)
+        {
+            var redisConnectionString = _conf.GetConnectionString("Redis");
+            if (string.IsNullOrEmpty(redisConnectionString))
+            {
+                throw new InvalidOperationException("Redis connection string is not configured.");
+            }
+
+            service.AddStackExchangeRedisCache(options =>
+            {
+                options.Configuration = redisConnectionString;
+                options.InstanceName = "Zust_";
+            });
+
+            service.AddScoped<ICacheService, RedisService>();
+        }
+        else
+        {
+            service.AddMemoryCache();
+            service.AddScoped<ICacheService, LocalCacheService>();
+        }
+
+        return service;
     }
 
     private static async Task CreateLanguages(ILanguageService _languageService)

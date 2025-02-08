@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Zust.Core.Entities;
 using Zust.Core.Enums;
+using Zust.DAL.Settings;
 
 namespace Zust.DAL.Configurations;
 
@@ -66,30 +67,34 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 
         builder
             .Property(x => x.FirstName)
-            .HasMaxLength(64)
+            .HasMaxLength(UserSetting.FirstNameLength)
             .IsRequired(true);
 
         builder
             .Property(x => x.LastName)
-            .HasMaxLength(64)
+            .HasMaxLength(UserSetting.LastNameLength)
             .IsRequired(true);
 
         builder
             .Property(x => x.UserName)
-            .HasMaxLength(64)
+            .HasMaxLength(UserSetting.UserNameLength)
             .IsRequired(true);
 
         builder
             .Property(x => x.Email)
-            .HasMaxLength(320) //maximum length in gmail.com
+            .HasMaxLength(UserSetting.EmailLength) //maximum length in gmail.com
             .IsRequired(true);
 
         builder
             .Property(x => x.BackupEmail)
-            .HasMaxLength(320); //maximum length in gmail.com
+            .HasMaxLength(UserSetting.EmailLength); //maximum length in gmail.com
 
         builder
             .Property(x => x.IsDeleted)
+            .HasDefaultValue(false);
+
+        builder
+            .Property(x => x.IsEmailConfirmed)
             .HasDefaultValue(false);
     }
 }

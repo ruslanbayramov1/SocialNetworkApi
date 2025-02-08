@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Zust.Core.Entities;
+using Zust.DAL.Settings;
 
 namespace Zust.DAL.Configurations;
 
@@ -21,7 +22,7 @@ public class OccupationConfiguration : IEntityTypeConfiguration<Occupation>
 
         builder
             .Property(x => x.Name)
-            .HasMaxLength(32)
+            .HasMaxLength(OccupationSetting.NameLength)
             .IsRequired(true);
 
         builder

@@ -18,6 +18,7 @@ builder.Services.AddRepositories();
 builder.Services.AddServices();
 builder.Services.AddAutoMapper();
 builder.Services.AddFluentValidation();
+builder.Services.AddCacheServices(builder.Configuration);
 
 var app = builder.Build();
 

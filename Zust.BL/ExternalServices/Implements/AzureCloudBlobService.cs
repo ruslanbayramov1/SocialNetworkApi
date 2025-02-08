@@ -34,7 +34,7 @@ public class AzureBlobCloudService : IAzureCloudBlobService
     {
         await _containerClient.CreateIfNotExistsAsync(PublicAccessType.Blob);
 
-        var user = await _userRepo.GetByIdAsync(Guid.Parse(_userClaimService.GetId()));
+        var user = await _userRepo.GetByIdAsync(_userClaimService.GetId());
         if (user == null) throw new NotFoundException<User>();
 
         string userFolder = $"users/{user.UserName}/{destFolderName.ToString().ToLower()}/";

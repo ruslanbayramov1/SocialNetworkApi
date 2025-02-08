@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Zust.Core.Entities;
+using Zust.DAL.Settings;
 
 namespace Zust.DAL.Configurations;
 
@@ -33,7 +34,7 @@ public class PostCommentConfiguration : IEntityTypeConfiguration<PostComment>
 
         builder
             .Property(x => x.Content)
-            .HasMaxLength(128)
+            .HasMaxLength(PostCommentSetting.ContentLength)
             .IsRequired(true);
     }
 }

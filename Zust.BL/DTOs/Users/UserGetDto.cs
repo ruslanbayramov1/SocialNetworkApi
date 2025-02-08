@@ -31,6 +31,7 @@ public class UserGetDto
     public string? Address { get; set; }
     public string? ProfileImageUrl { get; set; } = "https://finalprojectolympus.blob.core.windows.net/images/defaultuserimage.jpg";
     public string? CoverImageUrl { get; set; } = "https://finalprojectolympus.blob.core.windows.net/images/defaultusercover.jpg";
+    public bool IsEmailConfirmed { get; set; } = false;
 
     public ICollection<PostGetDto> Posts { get; set; } = new List<PostGetDto>(); // users himself Posts
     public ICollection<PostCommentGetDto> PostComments { get; set; } = new List<PostCommentGetDto>(); // users commented posts (comments on someones post)

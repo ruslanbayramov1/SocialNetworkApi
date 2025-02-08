@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Zust.Core.Entities;
+using Zust.DAL.Settings;
 
 namespace Zust.DAL.Configurations;
 
@@ -21,7 +22,7 @@ public class GenderConfiguration : IEntityTypeConfiguration<Gender>
 
         builder
             .Property(x => x.Name)
-            .HasMaxLength(32)
+            .HasMaxLength(GenderSetting.NameLength)
             .IsRequired(true);
 
         builder

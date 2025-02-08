@@ -27,7 +27,7 @@ public class PostService : IPostService
 
     public async Task CreatePostAsync(PostCreateDto vm)
     {
-        var user = await _userRepo.GetByIdAsync(Guid.Parse(_userClaimService.GetId()));
+        var user = await _userRepo.GetByIdAsync(_userClaimService.GetId());
         if (user == null) throw new NotFoundException<User>();
 
         string? imageUrl = null;
