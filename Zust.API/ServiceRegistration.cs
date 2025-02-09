@@ -82,6 +82,8 @@ public static class ServiceRegistration
                         Array.Empty<string>()
                     }
                 });
+
+            options.SwaggerDoc("v1", new OpenApiInfo { Title = "Zust Api", Version = "1.0" });
         });
 
         return services;

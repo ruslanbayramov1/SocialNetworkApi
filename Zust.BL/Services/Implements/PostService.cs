@@ -53,17 +53,4 @@ public class PostService : IPostService
         await _postRepository.AddAsync(model);
         await _postRepository.SaveAsync();
     }
-
-    public Task<List<PostGetDto>> GetProfilePosts()
-    {
-        var data = _postRepository.GetAllAsync(x => new PostGetDto
-        {
-            ImageUrl = x.ImageUrl,
-            Content = x.Content,
-            LikeCount = x.Likes.Count,
-            VideoUrl = x.VideoUrl,
-        });
-
-        return data;
-    }
 }

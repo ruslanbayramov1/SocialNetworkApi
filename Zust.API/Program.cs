@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Options;
 using Zust.API;
 using Zust.BL;
 using Zust.DAL;
@@ -28,6 +29,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(opt =>
     {
         opt.EnablePersistAuthorization();
+        opt.SwaggerEndpoint("/swagger/v1/swagger.json", "Zust API v1");
     });
 }
 

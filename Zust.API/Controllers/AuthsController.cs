@@ -42,7 +42,7 @@ public class AuthsController : ControllerBase
     [Route("[action]")]
     public async Task<IActionResult> VerifyEmail(string code)
     {
-        await _authService.VerifyEmail(code);
+        await _authService.VerifyEmailAsync(code);
         return Ok("Email successfully confirmed!");
     }
 
@@ -58,7 +58,23 @@ public class AuthsController : ControllerBase
     [Route("[action]")]
     public async Task<IActionResult> SetNewPassword([FromHeader]string code, NewPasswordDto dto)
     {
-        await _authService.SetNewPassword(code, dto);
+        await _authService.SetNewPasswordAsync(code, dto);
+        return Ok("");
+    }
+
+    [HttpPost]
+    [Route("[action]")]
+    public async Task<IActionResult> SendForgotPasswordEmail(string email)
+    {
+        string res = await _authService.SendForgotPasswordEmailAsync(email);
+        return Ok(res);
+    }
+
+    [HttpPost]
+    [Route("[action]")]
+    public async Task<IActionResult> SetForgotPasswordNewPassword([FromHeader]string code, [FromHeader]string email, NewPasswordDto dto)
+    {
+        await _authService.SetNewPasswordForgotAsync(code, email, dto);
         return Ok("");
     }
 }

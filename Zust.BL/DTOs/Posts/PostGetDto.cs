@@ -7,9 +7,8 @@ public class PostGetDto
 {
     public string Content { get; set; } = null!;
     public string? ImageUrl { get; set; }
-    public string? VideoUrl { get; set; }
 
-    public UserStatsGetDto PostedUser { get; set; }
+    public UserProfileGetDto PostedUser { get; set; }
 
     public int LikeCount { get; set; }
     public ICollection<PostCommentGetDto> Comments { get; set; }

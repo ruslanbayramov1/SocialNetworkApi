@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using BCrypt.Net;
 using Zust.BL.DTOs.Auths;
 using Zust.BL.Enums;
 using Zust.BL.Exceptions.Auths;
@@ -90,19 +89,7 @@ public class AuthService : IAuthService
         if (user.IsEmailConfirmed)
             throw new EmailConfirmedException();
 
-        string code = CodeHelper.GenerateCode();
-        string res = "";
-        int exp = 300;
-        string userEmail = user.BackupEmail ?? user.Email;
-
-        bool exists = await _cacheService.IsExists<string>(user.UserName);
-        if (exists)
-            throw new ExistsException("Confirmation code");
-
-        await _cacheService.Set(user.UserName, code, exp);
-
-        await _emailService.SendCodeToEmailAsync(user.UserName, code, userEmail, EmailTypes.Confirmation);
-        res = $"Code successfully sended to your email {userEmail.HideEmailInfo()}, and will exipre after {exp / 60} minutes.";
+        string res = await SendCodeToEmail(user, 300, EmailTypes.Confirmation);
 
         return res;
     }
@@ -116,24 +103,23 @@ public class AuthService : IAuthService
         if (!passwordRes)
             throw new InvalidPasswordException();
 
-        string code = CodeHelper.GenerateCode();
-        string res = "";
-        int exp = 300;
-        string userEmail = user.BackupEmail ?? user.Email;
-
-        bool exists = await _cacheService.IsExists<string>(user.UserName);
-        if (exists)
-            throw new ExistsException("Code");  
-
-        await _cacheService.Set(user.UserName, code, exp);
-
-        await _emailService.SendCodeToEmailAsync(user.UserName, code, userEmail, EmailTypes.NewPassword);
-        res = $"Code successfully sended to your email {userEmail.HideEmailInfo()}, and will exipre after {exp / 60} minutes.";
+        string res = await SendCodeToEmail(user, 300, EmailTypes.NewPassword);
 
         return res;
     }
 
-    public async Task VerifyEmail(string code)
+    public async Task<string> SendForgotPasswordEmailAsync(string userEmail)
+    {
+        var user = await _repo.GetByExpressionAsync(x => x.Email == userEmail);
+        if (user == null)
+            throw new NotFoundException<User>();
+
+        string res = await SendCodeToEmail(user, 300, EmailTypes.ForgotPassword);
+
+        return res;
+    }
+
+    public async Task VerifyEmailAsync(string code)
     {
         var user = await _repo.GetByIdAsync(_userClaimService.GetId());
         if (user == null) throw new NotFoundException<User>();
@@ -146,9 +132,24 @@ public class AuthService : IAuthService
         _cacheService.Delete(user.UserName);
     }
 
-    public async Task SetNewPassword(string code, NewPasswordDto dto)
+    public async Task SetNewPasswordAsync(string code, NewPasswordDto dto)
     {
         var user = await _repo.GetByIdAsync(_userClaimService.GetId());
+        if (user == null) throw new NotFoundException<User>();
+
+        await VerifyCode(user, code);
+
+        var newPassword = BCrypt.Net.BCrypt.EnhancedHashPassword(dto.Password);
+        user.PasswordHash = newPassword;
+
+        _repo.Update(user);
+        await _repo.SaveAsync();
+        _cacheService.Delete(user.UserName);
+    }
+
+    public async Task SetNewPasswordForgotAsync(string code, string userEmail ,NewPasswordDto dto)
+    {
+        var user = await _repo.GetByExpressionAsync(x => x.Email == userEmail);
         if (user == null) throw new NotFoundException<User>();
 
         await VerifyCode(user, code);
@@ -169,5 +170,23 @@ public class AuthService : IAuthService
 
         if (cacheCode != code)
             throw new InvalidCodeException();
+    }
+
+    public async Task<string> SendCodeToEmail(User user, int expTimeSec, EmailTypes emailType)
+    {
+        string code = CodeHelper.GenerateCode();
+        string res = "";
+        string userEmail = user.BackupEmail ?? user.Email;
+
+        bool exists = await _cacheService.IsExists<string>(user.UserName);
+        if (exists)
+            throw new ExistsException("Code");
+
+        await _cacheService.Set(user.UserName, code, expTimeSec);
+
+        await _emailService.SendCodeToEmailAsync(user.UserName, code, userEmail, EmailTypes.ForgotPassword);
+        res = $"Code successfully sended to your email {userEmail.HideEmailInfo()}, and will exipre after {expTimeSec / 60} minutes.";
+
+        return res;
     }
 }
