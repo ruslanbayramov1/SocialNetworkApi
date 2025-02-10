@@ -5,6 +5,7 @@ namespace Zust.BL.DTOs.Posts;
 
 public class PostGetDto
 {
+    public Guid Id { get; set; }
     public string Content { get; set; } = null!;
     public string? ImageUrl { get; set; }
 

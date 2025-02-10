@@ -2,4 +2,7 @@
 
 public class PostCommentCreateDto
 {
+    public string Content { get; set; }
+    public Guid PostId { get; set; }
+    public Guid? ParentCommentId { get; set; }
 }

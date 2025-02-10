@@ -1,11 +1,14 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Zust.BL.Attributes;
 using Zust.BL.DTOs.Languages;
 using Zust.BL.Services.Interfaces;
+using Zust.Core.Enums;
 
 namespace Zust.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
+[Auth(Roles.Admin | Roles.Moderator)]
 public class LanguagesController : ControllerBase
 {
     private readonly ILanguageService _LanguageService;

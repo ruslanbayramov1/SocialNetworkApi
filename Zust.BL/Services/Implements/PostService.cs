@@ -1,5 +1,9 @@
 ﻿using Zust.BL.Constants;
+using Zust.BL.DTOs.PostCommentLikes;
+using Zust.BL.DTOs.PostComments;
+using Zust.BL.DTOs.PostLikes;
 using Zust.BL.DTOs.Posts;
+using Zust.BL.DTOs.Users;
 using Zust.BL.Enums;
 using Zust.BL.Exceptions.Common;
 using Zust.BL.Exceptions.Files;
@@ -17,36 +21,154 @@ public class PostService : IPostService
     private readonly IUserClaimService _userClaimService;
     private readonly IUserRepository _userRepo;
     private readonly IAzureCloudBlobService _azureCloudBlobService;
-    public PostService(IPostRepository postRepository, IUserClaimService userClaimService, IUserRepository userRepo, IAzureCloudBlobService azureCloudBlobService)
+    private readonly IUserService _userService;
+    public PostService(IPostRepository postRepository, IUserClaimService userClaimService, IUserRepository userRepo, IAzureCloudBlobService azureCloudBlobService, IUserService userService)
     {
         _postRepository = postRepository;
         _userClaimService = userClaimService;
         _userRepo = userRepo;
         _azureCloudBlobService = azureCloudBlobService;
+        _userService = userService;
     }
 
-    public async Task CreatePostAsync(PostCreateDto vm)
+    public async Task CreateCommentAsync(PostCommentCreateDto dto)
+    {
+        var post = await _postRepository.GetByIdAsync(dto.PostId, x => new Post{ 
+            Id = x.Id,
+            Comments = x.Comments,
+            Content = x.Content,
+            CreatedAt = x.CreatedAt,
+            DeletedAt= x.DeletedAt,
+            ImageUrl = x.ImageUrl,
+            IsDeleted = x.IsDeleted,
+            Likes = x.Likes,
+            PostedUser = x.PostedUser,
+            PostedUserId = x.PostedUserId,
+            UpdatedAt = x.UpdatedAt,
+            VideoUrl = x.VideoUrl,
+        });
+        if (post == null) throw new NotFoundException<Post>();
+
+        var comment = new PostComment
+        { 
+            ParentCommentId = dto.ParentCommentId,
+            CommentedUserId = _userClaimService.GetId(),
+            Content = dto.Content,
+            PostId = post.Id,
+        };
+
+        if (dto.ParentCommentId == null)
+        {
+            post.Comments.Add(comment);
+        }
+        else
+        {
+            List<Guid> ids = post.Comments.Select(x => x.Id).ToList();
+            if (!ids.Contains(dto.ParentCommentId ?? Guid.Parse("")))
+                throw new NotFoundException<PostComment>();
+
+            post.Comments.FirstOrDefault(x => x.Id == dto.ParentCommentId)?.Replies.Add(comment);
+        }
+
+        _postRepository.Update(post);
+        await _postRepository.SaveAsync();
+    }
+
+    public async Task<List<PostGetDto>> GetUserPostAsync(Guid userId)
+    {
+        var user = await _userRepo.IsExistsAsync(userId);
+        if (!user)
+            throw new NotFoundException<User>();
+
+        List<PostGetDto> posts = new();
+
+        return posts;
+    }
+
+    public async Task<PostGetDto> GetPostByIdAsync(Guid postId)
+    {
+        bool res = await _postRepository.IsExistsAsync(postId);
+        if (!res)
+            throw new NotFoundException<Post>();
+
+        User? user = await _userRepo.GetByExpressionAsync(x => x.Posts.Select(y => y.Id).Contains(postId));
+        if (user == null) throw new NotFoundException<User>();
+
+        UserProfileGetDto userDto = await _userService.GetUserProfileById(user.Id);
+
+        PostGetDto? post = await _postRepository.GetByIdAsync(postId, x => new PostGetDto
+        {
+            Id = x.Id,
+            Content = x.Content,
+            ImageUrl = x.ImageUrl,
+            LikeCount = x.Likes.Count,
+            PostedUser = userDto,
+            Comments = x.Comments
+        .Where(y => y.ParentCommentId == null)
+        .Select(y => new PostCommentGetDto
+        {
+            Id = y.Id,
+            Content = y.Content,
+            CommentedUserName = y.CommentedUser.UserName,
+            ParentCommentId = y.ParentCommentId,
+            PostCommentLikes = y.Likes.Select(z => new PostCommentLikeGetDto
+            {
+                LikedUserName = z.LikedUser.UserName,
+            }).ToList(),
+            Replies = x.Comments
+                .Where(d => d.ParentCommentId == y.Id)
+                .Select(d => new PostCommentGetDto
+                {
+                    Id = d.Id,
+                    Content = d.Content,
+                    CommentedUserName = d.CommentedUser.UserName,
+                    ParentCommentId = d.ParentCommentId,
+                    PostCommentLikes = d.Likes.Select(z => new PostCommentLikeGetDto
+                    {
+                        LikedUserName = z.LikedUser.UserName,
+                    }).ToList(),
+                    Replies = x.Comments
+                        .Where(r => r.ParentCommentId == d.Id)
+                        .Select(r => new PostCommentGetDto
+                        {
+                            Id = r.Id,
+                            Content = r.Content,
+                            CommentedUserName = r.CommentedUser.UserName,
+                            ParentCommentId = r.ParentCommentId,
+                            PostCommentLikes = r.Likes.Select(l => new PostCommentLikeGetDto
+                            {
+                                LikedUserName = l.LikedUser.UserName,
+                            }).ToList(),
+                        }).ToList()
+                }).ToList(),
+        }).ToList(),
+        });
+
+        return post;
+    }
+
+    public async Task CreatePostAsync(PostCreateDto dto)
     {
         var user = await _userRepo.GetByIdAsync(_userClaimService.GetId());
         if (user == null) throw new NotFoundException<User>();
 
         string? imageUrl = null;
-        if (vm.Image != null)
+        if (dto.Image != null)
         {
-            if (!vm.Image.IsValidSize())
+            if (!dto.Image.IsValidSize())
             {
                 throw new InvalidFileSizeException($"The image size is invalid. Maximum allowed size is {FileConstant.ImageSize / 1024} mb");
             }
-            else if(!vm.Image.IsValidType())
+            else if(!dto.Image.IsValidType())
             {
                 throw new InvalidFileTypeException($"The image type is invalid. Allowed ones are any types of images.");
             }
-            imageUrl = await _azureCloudBlobService.UploadImageAsync(vm.Image, AzureFolderDestinations.Posts);
+            imageUrl = await _azureCloudBlobService.UploadImageAsync(dto.Image, AzureFolderDestinations.Posts);
         }
 
         var model = new Post
         {
-            Content = vm.Content,
+            Content = dto.Content,
             PostedUserId = user.Id,
             ImageUrl = imageUrl,
         };

@@ -29,9 +29,5 @@ public class PostConfiguration : IEntityTypeConfiguration<Post>
         builder
             .Property(x => x.ImageUrl)
             .HasMaxLength(PostSetting.ImageUrlLength);
-
-        builder
-            .Property(x => x.VideoUrl)
-            .HasMaxLength(PostSetting.VideoUrlLength);
     }
 }

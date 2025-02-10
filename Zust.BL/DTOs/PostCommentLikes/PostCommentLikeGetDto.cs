@@ -2,4 +2,5 @@
 
 public class PostCommentLikeGetDto
 {
+    public string LikedUserName { get; set; }
 }

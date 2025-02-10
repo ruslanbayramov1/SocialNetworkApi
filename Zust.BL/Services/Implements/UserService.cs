@@ -65,7 +65,6 @@ public class UserService : IUserService
         var user = await _userRepo.GetByIdAsync(id);
         if (user == null) throw new NotFoundException<User>();
 
-        int likeCount = await _userRepo.GetUserLikes(id);
         int count = user.Posts.Select(x => x.Likes).Sum(x => x.Count);
 
         UserProfileGetDto? userProfile = await _userRepo.GetByIdAsync(id,x => new UserProfileGetDto {

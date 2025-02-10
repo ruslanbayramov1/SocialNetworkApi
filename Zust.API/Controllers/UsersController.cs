@@ -1,10 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Zust.BL.Attributes;
 using Zust.BL.Services.Interfaces;
 
 namespace Zust.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
+[Auth]
 public class UsersController : ControllerBase
 {
     private readonly IUserService _userService;

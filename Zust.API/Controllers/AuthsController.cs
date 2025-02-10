@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Zust.BL.Attributes;
 using Zust.BL.DTOs.Auths;
 using Zust.BL.Services.Interfaces;
 
@@ -6,6 +7,7 @@ namespace Zust.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
+[Auth]
 public class AuthsController : ControllerBase
 {
     private readonly IAuthService _authService;
@@ -16,6 +18,7 @@ public class AuthsController : ControllerBase
 
     [HttpPost]
     [Route("[action]")]
+    [NoAuth]
     public async Task<IActionResult> Register(RegisterDto dto)
     { 
         await _authService.RegisterAsync(dto);
@@ -24,6 +27,7 @@ public class AuthsController : ControllerBase
 
     [HttpPost]
     [Route("[action]")]
+    [NoAuth]
     public async Task<IActionResult> Login(LoginDto dto)
     {
         string token = await _authService.LoginAsync(dto);

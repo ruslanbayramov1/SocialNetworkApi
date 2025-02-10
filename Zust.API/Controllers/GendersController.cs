@@ -1,12 +1,15 @@
 ﻿using Azure.Storage.Blobs.Models;
 using Microsoft.AspNetCore.Mvc;
+using Zust.BL.Attributes;
 using Zust.BL.DTOs.Genders;
 using Zust.BL.Services.Interfaces;
+using Zust.Core.Enums;
 
 namespace Zust.API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
+[Auth(Roles.Admin | Roles.Moderator)]
 public class GendersController : ControllerBase
 {
     private readonly IGenderService _genderService;
