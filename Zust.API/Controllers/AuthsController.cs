@@ -68,6 +68,7 @@ public class AuthsController : ControllerBase
 
     [HttpPost]
     [Route("[action]")]
+    [NoAuth]
     public async Task<IActionResult> SendForgotPasswordEmail(string email)
     {
         string res = await _authService.SendForgotPasswordEmailAsync(email);
@@ -76,6 +77,7 @@ public class AuthsController : ControllerBase
 
     [HttpPost]
     [Route("[action]")]
+    [NoAuth]
     public async Task<IActionResult> SetForgotPasswordNewPassword([FromHeader]string code, [FromHeader]string email, NewPasswordDto dto)
     {
         await _authService.SetNewPasswordForgotAsync(code, email, dto);

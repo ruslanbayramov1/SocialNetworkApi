@@ -1,4 +1,5 @@
 ﻿using Zust.BL.DTOs.PostComments;
+using Zust.BL.DTOs.PostLikes;
 using Zust.BL.DTOs.Users;
 
 namespace Zust.BL.DTOs.Posts;
@@ -11,6 +12,8 @@ public class PostGetDto
 
     public UserProfileGetDto PostedUser { get; set; }
 
+    public ICollection<PostLikeGetDto> Likes = new List<PostLikeGetDto>();
+
     public int LikeCount { get; set; }
-    public ICollection<PostCommentGetDto> Comments { get; set; }
+    public ICollection<PostCommentGetDto> Comments { get; set; } = new List<PostCommentGetDto>();
 }

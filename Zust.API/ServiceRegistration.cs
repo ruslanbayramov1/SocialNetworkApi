@@ -15,6 +15,7 @@ public static class ServiceRegistration
         services.Configure<AzureOption>(configuration.GetSection(AzureOption.Position));
         services.Configure<SmtpOption>(configuration.GetSection(SmtpOption.Position));
         services.Configure<JwtOption>(configuration.GetSection(JwtOption.Position));
+        services.Configure<AdminOption>(configuration.GetSection(AdminOption.Position));
         return services;
     }
 

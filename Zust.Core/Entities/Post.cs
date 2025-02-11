@@ -6,7 +6,6 @@ public class Post : BaseEntity
 {
     public string Content { get; set; } = null!;
     public string? ImageUrl { get; set; }
-    public string? VideoUrl { get; set; }
 
     public User PostedUser { get; set; } // the user who posts
     public Guid PostedUserId { get; set; }

@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Zust.BL.Attributes;
+using Zust.BL.DTOs.PostCommentLikes;
 using Zust.BL.DTOs.PostComments;
+using Zust.BL.DTOs.PostLikes;
 using Zust.BL.DTOs.Posts;
 using Zust.BL.Services.Interfaces;
 
@@ -19,7 +21,7 @@ public class PostsController : ControllerBase
 
     [HttpPost]
     [Route("[action]")]
-    public async Task<IActionResult> Create([FromForm]PostCreateDto dto)
+    public async Task<IActionResult> Create([FromForm] PostCreateDto dto)
     {
         await _postService.CreatePostAsync(dto);
         return Created();
@@ -28,7 +30,7 @@ public class PostsController : ControllerBase
     [HttpGet]
     [Route("[action]/{postId:guid}")]
     public async Task<IActionResult> GetById(Guid postId)
-    { 
+    {
         return Ok(await _postService.GetPostByIdAsync(postId));
     }
 
@@ -37,6 +39,23 @@ public class PostsController : ControllerBase
     public async Task<IActionResult> CreateComment(PostCommentCreateDto dto)
     {
         await _postService.CreateCommentAsync(dto);
+        return Created();
+    }
+
+    [HttpPost]
+    [Route("[action]")]
+    [Route("{postId:guid}")]
+    public async Task<IActionResult> CreateLike(Guid postId)
+    {
+        await _postService.CreatePostLikeAsync(postId);
+        return Created();
+    }
+
+    [HttpPost]
+    [Route("[action]")]
+    public async Task<IActionResult> CreateCommentLike(PostCommentLikeCreateDto dto)
+    {
+        await _postService.CreateCommentLikeAsync(dto);
         return Created();
     }
 }
