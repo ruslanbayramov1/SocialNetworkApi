@@ -22,13 +22,15 @@ public class PostService : IPostService
     private readonly IUserRepository _userRepo;
     private readonly IAzureCloudBlobService _azureCloudBlobService;
     private readonly IUserService _userService;
-    public PostService(IPostRepository postRepository, IUserClaimService userClaimService, IUserRepository userRepo, IAzureCloudBlobService azureCloudBlobService, IUserService userService)
+    private readonly IPostLikeRepository _postLikeRepository;
+    public PostService(IPostRepository postRepository, IUserClaimService userClaimService, IUserRepository userRepo, IAzureCloudBlobService azureCloudBlobService, IUserService userService, IPostLikeRepository postLikeRepository)
     {
         _postRepository = postRepository;
         _userClaimService = userClaimService;
         _userRepo = userRepo;
         _azureCloudBlobService = azureCloudBlobService;
         _userService = userService;
+        _postLikeRepository = postLikeRepository;
     }
 
     public async Task CreateCommentAsync(PostCommentCreateDto dto)
@@ -245,7 +247,17 @@ public class PostService : IPostService
             LikedUserId = user.Id
         };
 
-        post.Likes.Add(postLike);
+        var postBefore = post.Likes.FirstOrDefault(x => x.LikedUserId == user.Id);
+
+        if (postBefore != null) // if user alreadt liked then remove, else - add like
+        {
+            _postLikeRepository.Remove(postBefore);
+        }
+        else
+        { 
+            post.Likes.Add(postLike);
+        }
+
         _postRepository.Update(post);
         await _postRepository.SaveAsync();
     }

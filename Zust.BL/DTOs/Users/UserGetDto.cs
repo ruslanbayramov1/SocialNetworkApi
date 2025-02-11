@@ -27,7 +27,4 @@ public class UserGetDto
     public bool IsEmailConfirmed { get; set; } = false;
 
     public ICollection<PostGetDto> Posts { get; set; } = new List<PostGetDto>(); // users himself Posts
-    public ICollection<PostCommentGetDto> PostComments { get; set; } = new List<PostCommentGetDto>(); // users commented posts (comments on someones post)
-    public ICollection<PostLikeGetDto> PostLikes { get; set; } = new List<PostLikeGetDto>(); // users liked posts (likes on someones post)
-    public ICollection<PostCommentLikeGetDto> PostCommentLikes { get; set; } = new List<PostCommentLikeGetDto>(); // users liked comments (likes on someones comment)
 }

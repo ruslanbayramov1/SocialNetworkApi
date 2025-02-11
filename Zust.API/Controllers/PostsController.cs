@@ -43,8 +43,7 @@ public class PostsController : ControllerBase
     }
 
     [HttpPost]
-    [Route("[action]")]
-    [Route("{postId:guid}")]
+    [Route("[action]/{postId:guid}")]
     public async Task<IActionResult> CreateLike(Guid postId)
     {
         await _postService.CreatePostLikeAsync(postId);

@@ -1,4 +1,6 @@
-﻿using Zust.BL.DTOs.PostComments;
+﻿using Zust.BL.DTOs.PostCommentLikes;
+using Zust.BL.DTOs.PostComments;
+using Zust.BL.DTOs.PostLikes;
 using Zust.BL.DTOs.Posts;
 using Zust.BL.DTOs.Users;
 using Zust.BL.Exceptions.Common;
@@ -47,13 +49,89 @@ public class UserService : IUserService
             RelationStatus = user.RelationStatus.Name,
             Posts = user.Posts.Select(x => new PostGetDto
             {
-                Comments = x.Comments.Select(y => new PostCommentGetDto
-                {
-
-                }).ToList(),
+                Id = x.Id,
                 Content = x.Content,
                 ImageUrl = x.ImageUrl,
                 LikeCount = x.Likes.Count,
+                Likes = x.Likes.Select(lk => new PostLikeGetDto
+                {
+                    PostId = x.Id,
+                    LikedUser = new UserLikeGetDto
+                    {
+                        Id = lk.LikedUser.Id,
+                        CoverImageUrl = lk.LikedUser.CoverImageUrl,
+                        ProfileImageUrl = lk.LikedUser.ProfileImageUrl,
+                        FirstName = lk.LikedUser.FirstName,
+                        LastName = lk.LikedUser.LastName,
+                        UserName = lk.LikedUser.UserName
+                    }
+                }).ToList(),
+                Comments = x.Comments
+                .Where(y => y.ParentCommentId == null)
+                .Select(y => new PostCommentGetDto
+                {
+                    Id = y.Id,
+                    PostId = y.PostId,
+                    Content = y.Content,
+                    ParentCommentId = y.ParentCommentId,
+                    PostCommentLikes = y.Likes.Select(t => new PostCommentLikeGetDto
+                    {
+                        CommentId = y.Id,
+                        LikedUser = new UserLikeGetDto
+                        {
+                            Id = t.LikedUser.Id,
+                            CoverImageUrl = t.LikedUser.CoverImageUrl,
+                            ProfileImageUrl = t.LikedUser.ProfileImageUrl,
+                            FirstName = t.LikedUser.FirstName,
+                            LastName = t.LikedUser.LastName,
+                            UserName = t.LikedUser.UserName
+                        }
+                    }).ToList(),
+                    Replies = x.Comments
+                        .Where(d => d.ParentCommentId == y.Id)
+                        .Select(d => new PostCommentGetDto
+                        {
+                            Id = d.Id,
+                            PostId = y.PostId,
+                            Content = d.Content,
+                            ParentCommentId = d.ParentCommentId,
+                            PostCommentLikes = d.Likes.Select(t => new PostCommentLikeGetDto
+                            {
+                                CommentId = d.Id,
+                                LikedUser = new UserLikeGetDto
+                                {
+                                    Id = t.LikedUser.Id,
+                                    CoverImageUrl = t.LikedUser.CoverImageUrl,
+                                    ProfileImageUrl = t.LikedUser.ProfileImageUrl,
+                                    FirstName = t.LikedUser.FirstName,
+                                    LastName = t.LikedUser.LastName,
+                                    UserName = t.LikedUser.UserName
+                                }
+                            }).ToList(),
+                            Replies = x.Comments
+                                .Where(r => r.ParentCommentId == d.Id)
+                                .Select(r => new PostCommentGetDto
+                                {
+                                    Id = r.Id,
+                                    PostId = y.PostId,
+                                    Content = r.Content,
+                                    ParentCommentId = r.ParentCommentId,
+                                    PostCommentLikes = d.Likes.Select(t => new PostCommentLikeGetDto
+                                    {
+                                        CommentId = r.Id,
+                                        LikedUser = new UserLikeGetDto
+                                        {
+                                            Id = t.LikedUser.Id,
+                                            CoverImageUrl = t.LikedUser.CoverImageUrl,
+                                            ProfileImageUrl = t.LikedUser.ProfileImageUrl,
+                                            FirstName = t.LikedUser.FirstName,
+                                            LastName = t.LikedUser.LastName,
+                                            UserName = t.LikedUser.UserName
+                                        }
+                                    }).ToList(),
+                                }).ToList()
+                        }).ToList(),
+                }).ToList(),
             }).ToList(),
         }); 
 
@@ -62,10 +140,43 @@ public class UserService : IUserService
 
     public async Task<UserProfileGetDto> GetUserProfileById(Guid id)
     {
-        var user = await _userRepo.GetByIdAsync(id);
+        var user = await _userRepo.GetByIdAsync(id, x=> new User
+        {
+            Address = x.Address,
+            CreatedAt = x.CreatedAt,
+            BackupEmail = x.BackupEmail,
+            BloodGroup = x.BloodGroup,
+            BloodGroupId = x.BloodGroupId,
+            CoverImageUrl = x.CoverImageUrl,
+            DateOfBirth = x.DateOfBirth,
+            DeletedAt = x.DeletedAt,
+            Email = x.Email,
+            FirstName = x.FirstName,
+            Gender = x.Gender,
+            GenderId = x.GenderId,
+            Id = x.Id,
+            IsDeleted = x.IsDeleted,
+            IsEmailConfirmed = x.IsEmailConfirmed,
+            Language = x.Language,
+            LanguageId = x.LanguageId,
+            LastName = x.LastName,
+            Occupation = x.Occupation,
+            OccupationId = x.OccupationId,
+            ProfileImageUrl = x.ProfileImageUrl,
+            RelationStatus = x.RelationStatus,
+            RelationStatusId = x.RelationStatusId,
+            UpdatedAt = x.UpdatedAt,
+            UserName = x.UserName,
+            Website = x.Website,
+            Posts = x.Posts,
+            Role = x.Role,
+            PostCommentLikes = x.PostCommentLikes,
+            PostComments = x.PostComments,
+            PostLikes = x.PostLikes,
+        });
         if (user == null) throw new NotFoundException<User>();
 
-        int count = user.Posts.Select(x => x.Likes).Sum(x => x.Count);
+        int count = user.Posts.Sum(x => x.Likes.Count);
 
         UserProfileGetDto? userProfile = await _userRepo.GetByIdAsync(id,x => new UserProfileGetDto {
             FirstName = user.FirstName,

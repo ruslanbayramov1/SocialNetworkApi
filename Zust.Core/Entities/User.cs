@@ -10,7 +10,7 @@ public class User : BaseEntity
     public string PasswordHash { get; set; } = null!;
     public string FirstName { get; set; } = null!;
     public string LastName { get; set; } = null!;
-    public int Role = (int)Roles.Member;
+    public int Role { get; set; } = (int)Roles.Member;
     public string? BackupEmail { get; set; }
     public DateTime? DateOfBirth { get; set; }
     public Occupation? Occupation { get; set; }

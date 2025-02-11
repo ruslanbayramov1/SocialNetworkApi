@@ -18,6 +18,7 @@ public static class ServiceRegistration
         services.AddScoped<IRelationStatusRepository, RelationStatusRepository>();
         services.AddScoped<IPostRepository, PostRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IPostLikeRepository, PostLikeRepository>();
 
         return services;
     }
