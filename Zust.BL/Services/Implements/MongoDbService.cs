@@ -30,7 +30,7 @@ public class MongoDbService : IMongoDbService
 
     private async Task CreatePostNotificationIndexesAsync()
     {
-        var notificationCollection = GetCollection<PostLikeNotification>(MongoCollections.PostNotifications);
+        var notificationCollection = GetCollection<Notification>(MongoCollections.Notifications);
 
         var existingIndexes = await notificationCollection.Indexes.ListAsync();
         var indexNames = await existingIndexes.ToListAsync(); // listing index names
@@ -38,10 +38,10 @@ public class MongoDbService : IMongoDbService
         if (indexNames.Any(ix => ix["name"] == "ReceiverId_Index")) // check if index name exists, then return
             return;
 
-        var indexKeys = Builders<PostLikeNotification>.IndexKeys
+        var indexKeys = Builders<Notification>.IndexKeys
             .Ascending(n => n.ReceiverId);
 
-        var indexModel = new CreateIndexModel<PostLikeNotification>(indexKeys, new CreateIndexOptions { Name = "ReceiverId_Index" });
+        var indexModel = new CreateIndexModel<Notification>(indexKeys, new CreateIndexOptions { Name = "ReceiverId_Index" });
 
         await notificationCollection.Indexes.CreateOneAsync(indexModel);
     }
