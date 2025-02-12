@@ -16,6 +16,7 @@ public static class ServiceRegistration
         services.Configure<SmtpOption>(configuration.GetSection(SmtpOption.Position));
         services.Configure<JwtOption>(configuration.GetSection(JwtOption.Position));
         services.Configure<AdminOption>(configuration.GetSection(AdminOption.Position));
+        services.Configure<MongoOption>(configuration.GetSection(MongoOption.Position));
         return services;
     }
 
