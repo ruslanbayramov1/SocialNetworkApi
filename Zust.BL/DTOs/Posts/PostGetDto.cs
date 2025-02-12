@@ -12,8 +12,6 @@ public class PostGetDto
 
     public UserProfileGetDto PostedUser { get; set; }
 
-    public ICollection<PostLikeGetDto> Likes = new List<PostLikeGetDto>();
-
     public int LikeCount { get; set; }
     public ICollection<PostCommentGetDto> Comments { get; set; } = new List<PostCommentGetDto>();
 }

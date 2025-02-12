@@ -22,6 +22,7 @@ public class PostCommentConfiguration : IEntityTypeConfiguration<PostComment>
             .Property(x => x.CreatedAt)
             .HasDefaultValueSql("GETDATE()");
 
+        //self join for replies
         builder
             .HasOne(x => x.ParentComment)
             .WithMany(x => x.Replies)

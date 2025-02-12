@@ -53,19 +53,6 @@ public class UserService : IUserService
                 Content = x.Content,
                 ImageUrl = x.ImageUrl,
                 LikeCount = x.Likes.Count,
-                Likes = x.Likes.Select(lk => new PostLikeGetDto
-                {
-                    PostId = x.Id,
-                    LikedUser = new UserLikeGetDto
-                    {
-                        Id = lk.LikedUser.Id,
-                        CoverImageUrl = lk.LikedUser.CoverImageUrl,
-                        ProfileImageUrl = lk.LikedUser.ProfileImageUrl,
-                        FirstName = lk.LikedUser.FirstName,
-                        LastName = lk.LikedUser.LastName,
-                        UserName = lk.LikedUser.UserName
-                    }
-                }).ToList(),
                 Comments = x.Comments
                 .Where(y => y.ParentCommentId == null)
                 .Select(y => new PostCommentGetDto
@@ -74,63 +61,6 @@ public class UserService : IUserService
                     PostId = y.PostId,
                     Content = y.Content,
                     ParentCommentId = y.ParentCommentId,
-                    PostCommentLikes = y.Likes.Select(t => new PostCommentLikeGetDto
-                    {
-                        CommentId = y.Id,
-                        LikedUser = new UserLikeGetDto
-                        {
-                            Id = t.LikedUser.Id,
-                            CoverImageUrl = t.LikedUser.CoverImageUrl,
-                            ProfileImageUrl = t.LikedUser.ProfileImageUrl,
-                            FirstName = t.LikedUser.FirstName,
-                            LastName = t.LikedUser.LastName,
-                            UserName = t.LikedUser.UserName
-                        }
-                    }).ToList(),
-                    Replies = x.Comments
-                        .Where(d => d.ParentCommentId == y.Id)
-                        .Select(d => new PostCommentGetDto
-                        {
-                            Id = d.Id,
-                            PostId = y.PostId,
-                            Content = d.Content,
-                            ParentCommentId = d.ParentCommentId,
-                            PostCommentLikes = d.Likes.Select(t => new PostCommentLikeGetDto
-                            {
-                                CommentId = d.Id,
-                                LikedUser = new UserLikeGetDto
-                                {
-                                    Id = t.LikedUser.Id,
-                                    CoverImageUrl = t.LikedUser.CoverImageUrl,
-                                    ProfileImageUrl = t.LikedUser.ProfileImageUrl,
-                                    FirstName = t.LikedUser.FirstName,
-                                    LastName = t.LikedUser.LastName,
-                                    UserName = t.LikedUser.UserName
-                                }
-                            }).ToList(),
-                            Replies = x.Comments
-                                .Where(r => r.ParentCommentId == d.Id)
-                                .Select(r => new PostCommentGetDto
-                                {
-                                    Id = r.Id,
-                                    PostId = y.PostId,
-                                    Content = r.Content,
-                                    ParentCommentId = r.ParentCommentId,
-                                    PostCommentLikes = d.Likes.Select(t => new PostCommentLikeGetDto
-                                    {
-                                        CommentId = r.Id,
-                                        LikedUser = new UserLikeGetDto
-                                        {
-                                            Id = t.LikedUser.Id,
-                                            CoverImageUrl = t.LikedUser.CoverImageUrl,
-                                            ProfileImageUrl = t.LikedUser.ProfileImageUrl,
-                                            FirstName = t.LikedUser.FirstName,
-                                            LastName = t.LikedUser.LastName,
-                                            UserName = t.LikedUser.UserName
-                                        }
-                                    }).ToList(),
-                                }).ToList()
-                        }).ToList(),
                 }).ToList(),
             }).ToList(),
         }); 

@@ -1,7 +1,6 @@
 ﻿using Zust.BL.Constants;
 using Zust.BL.DTOs.PostCommentLikes;
 using Zust.BL.DTOs.PostComments;
-using Zust.BL.DTOs.PostLikes;
 using Zust.BL.DTOs.Posts;
 using Zust.BL.DTOs.Users;
 using Zust.BL.Enums;
@@ -22,58 +21,15 @@ public class PostService : IPostService
     private readonly IUserRepository _userRepo;
     private readonly IAzureCloudBlobService _azureCloudBlobService;
     private readonly IUserService _userService;
-    private readonly IPostLikeRepository _postLikeRepository;
-    public PostService(IPostRepository postRepository, IUserClaimService userClaimService, IUserRepository userRepo, IAzureCloudBlobService azureCloudBlobService, IUserService userService, IPostLikeRepository postLikeRepository)
+    private readonly IPostCommentLikeRepository _postCommentLikeRepository;
+    public PostService(IPostRepository postRepository, IUserClaimService userClaimService, IUserRepository userRepo, IAzureCloudBlobService azureCloudBlobService, IUserService userService, IPostCommentLikeRepository postCommentLikeRepository)
     {
         _postRepository = postRepository;
         _userClaimService = userClaimService;
         _userRepo = userRepo;
         _azureCloudBlobService = azureCloudBlobService;
         _userService = userService;
-        _postLikeRepository = postLikeRepository;
-    }
-
-    public async Task CreateCommentAsync(PostCommentCreateDto dto)
-    {
-        var post = await _postRepository.GetByIdAsync(dto.PostId, x => new Post{ 
-            Id = x.Id,
-            Comments = x.Comments,
-            Content = x.Content,
-            CreatedAt = x.CreatedAt,
-            DeletedAt= x.DeletedAt,
-            ImageUrl = x.ImageUrl,
-            IsDeleted = x.IsDeleted,
-            Likes = x.Likes,
-            PostedUser = x.PostedUser,
-            PostedUserId = x.PostedUserId,
-            UpdatedAt = x.UpdatedAt,
-        });
-
-        if (post == null) throw new NotFoundException<Post>();
-
-        var comment = new PostComment
-        { 
-            ParentCommentId = dto.ParentCommentId,
-            CommentedUserId = _userClaimService.GetId(),
-            Content = dto.Content,
-            PostId = post.Id,
-        };
-
-        if (dto.ParentCommentId == null)
-        {
-            post.Comments.Add(comment);
-        }
-        else
-        {
-            List<Guid> ids = post.Comments.Select(x => x.Id).ToList();
-            if (!ids.Contains(dto.ParentCommentId ?? Guid.Parse("")))
-                throw new NotFoundException<PostComment>();
-
-            post.Comments.FirstOrDefault(x => x.Id == dto.ParentCommentId)?.Replies.Add(comment);
-        }
-
-        _postRepository.Update(post);
-        await _postRepository.SaveAsync();
+        _postCommentLikeRepository = postCommentLikeRepository;
     }
 
     public async Task<List<PostGetDto>> GetUserPostAsync(Guid userId)
@@ -103,21 +59,8 @@ public class PostService : IPostService
             Id = x.Id,
             Content = x.Content,
             ImageUrl = x.ImageUrl,
-            LikeCount = x.Likes.Count,
+            LikeCount = x.Likes.Count(),
             PostedUser = userDto,
-            Likes = x.Likes.Select(lk => new PostLikeGetDto
-            {
-                PostId = x.Id,
-                LikedUser = new UserLikeGetDto
-                {
-                    Id = lk.LikedUser.Id,
-                    CoverImageUrl = lk.LikedUser.CoverImageUrl,
-                    ProfileImageUrl = lk.LikedUser.ProfileImageUrl,
-                    FirstName = lk.LikedUser.FirstName,
-                    LastName = lk.LikedUser.LastName,
-                    UserName = lk.LikedUser.UserName
-                }
-            }).ToList(),
             Comments = x.Comments
         .Where(y => y.ParentCommentId == null)
         .Select(y => new PostCommentGetDto
@@ -126,63 +69,15 @@ public class PostService : IPostService
             PostId = y.PostId,
             Content = y.Content,
             ParentCommentId = y.ParentCommentId,
-            PostCommentLikes = y.Likes.Select(t => new PostCommentLikeGetDto
+            CommentedUser = new UserCommentGetDto
             {
-                CommentId = y.Id,
-                LikedUser = new UserLikeGetDto
-                {
-                    Id = t.LikedUser.Id,
-                    CoverImageUrl = t.LikedUser.CoverImageUrl,
-                    ProfileImageUrl = t.LikedUser.ProfileImageUrl,
-                    FirstName = t.LikedUser.FirstName,
-                    LastName = t.LikedUser.LastName,
-                    UserName = t.LikedUser.UserName
-                }
-            }).ToList(),
-            Replies = x.Comments
-                .Where(d => d.ParentCommentId == y.Id)
-                .Select(d => new PostCommentGetDto
-                {
-                    Id = d.Id,
-                    PostId = y.PostId,
-                    Content = d.Content,
-                    ParentCommentId = d.ParentCommentId,
-                    PostCommentLikes = d.Likes.Select(t => new PostCommentLikeGetDto
-                    {
-                        CommentId = d.Id,
-                        LikedUser = new UserLikeGetDto
-                        {
-                            Id = t.LikedUser.Id,
-                            CoverImageUrl = t.LikedUser.CoverImageUrl,
-                            ProfileImageUrl = t.LikedUser.ProfileImageUrl,
-                            FirstName = t.LikedUser.FirstName,
-                            LastName = t.LikedUser.LastName,
-                            UserName = t.LikedUser.UserName
-                        }
-                    }).ToList(),
-                    Replies = x.Comments
-                        .Where(r => r.ParentCommentId == d.Id)
-                        .Select(r => new PostCommentGetDto
-                        {
-                            Id = r.Id,
-                            PostId = y.PostId,
-                            Content = r.Content,
-                            ParentCommentId = r.ParentCommentId,
-                            PostCommentLikes = d.Likes.Select(t => new PostCommentLikeGetDto
-                            {
-                                CommentId = r.Id,
-                                LikedUser = new UserLikeGetDto
-                                {
-                                    Id = t.LikedUser.Id,
-                                    CoverImageUrl = t.LikedUser.CoverImageUrl,
-                                    ProfileImageUrl = t.LikedUser.ProfileImageUrl,
-                                    FirstName = t.LikedUser.FirstName,
-                                    LastName = t.LikedUser.LastName,
-                                    UserName = t.LikedUser.UserName
-                                }
-                            }).ToList(),
-                        }).ToList()
-                }).ToList(),
+                Id = y.CommentedUser.Id,
+                FirstName = y.CommentedUser.FirstName,
+                LastName = y.CommentedUser.LastName,
+                CoverImageUrl = y.CommentedUser.CoverImageUrl,
+                ProfileImageUrl = y.CommentedUser.ProfileImageUrl,
+                UserName = y.CommentedUser.UserName,
+            },
         }).ToList(),
         });
 
@@ -201,7 +96,7 @@ public class PostService : IPostService
             {
                 throw new InvalidFileSizeException($"The image size is invalid. Maximum allowed size is {FileConstant.ImageSize / 1024} mb");
             }
-            else if(!dto.Image.IsValidType())
+            else if (!dto.Image.IsValidType())
             {
                 throw new InvalidFileTypeException($"The image type is invalid. Allowed ones are any types of images.");
             }
@@ -218,7 +113,40 @@ public class PostService : IPostService
         await _postRepository.SaveAsync();
     }
 
-    public async Task CreatePostLikeAsync(Guid postId)
+    public async Task CreateCommentLikeAsync(PostCommentLikeCreateDto dto)
+    {
+        var post = await GetPostModelByIdAsync(dto.PostId);
+
+        if (post == null)
+            throw new NotFoundException<Post>();
+
+        var user = await _userRepo.GetByIdAsync(_userClaimService.GetId());
+        if (user == null) throw new NotFoundException<User>();
+
+        PostComment? postComment = post.Comments.FirstOrDefault(x => x.Id == dto.CommentId);
+        if (postComment == null) throw new NotFoundException("Post comment");
+
+        var postCommentLike = await _postCommentLikeRepository.GetByExpressionAsync(x => x.LikedUserId == user.Id && x.PostCommentId == postComment.Id);
+
+        if (postCommentLike == null)
+        {
+            var commentLike = new PostCommentLike
+            {
+                PostCommentId = dto.CommentId,
+                LikedUserId = user.Id,
+            };
+            await _postCommentLikeRepository.AddAsync(commentLike);
+        }
+        else
+        {
+            _postCommentLikeRepository.Remove(postCommentLike);
+        }
+
+        await _postRepository.SaveAsync();
+    }
+
+    // helper
+    public async Task<Post> GetPostModelByIdAsync(Guid postId)
     {
         var post = await _postRepository.GetByIdAsync(postId, x => new Post
         {
@@ -238,65 +166,6 @@ public class PostService : IPostService
         if (post == null)
             throw new NotFoundException<Post>();
 
-        var user = await _userRepo.GetByIdAsync(_userClaimService.GetId());
-        if (user == null) throw new NotFoundException<User>();
-
-        var postLike = new PostLike
-        {
-            PostId = postId,
-            LikedUserId = user.Id
-        };
-
-        var postBefore = post.Likes.FirstOrDefault(x => x.LikedUserId == user.Id);
-
-        if (postBefore != null) // if user alreadt liked then remove, else - add like
-        {
-            _postLikeRepository.Remove(postBefore);
-        }
-        else
-        { 
-            post.Likes.Add(postLike);
-        }
-
-        _postRepository.Update(post);
-        await _postRepository.SaveAsync();
-    }
-
-    public async Task CreateCommentLikeAsync(PostCommentLikeCreateDto dto)
-    {
-        var post = await _postRepository.GetByIdAsync(dto.PostId, x => new Post
-        {
-            Id = x.Id,
-            Comments = x.Comments,
-            Content = x.Content,
-            CreatedAt = x.CreatedAt,
-            DeletedAt = x.DeletedAt,
-            ImageUrl = x.ImageUrl,
-            IsDeleted = x.IsDeleted,
-            Likes = x.Likes,
-            PostedUser = x.PostedUser,
-            PostedUserId = x.PostedUserId,
-            UpdatedAt = x.UpdatedAt,
-        });
-
-        if (post == null)
-            throw new NotFoundException<Post>();
-
-        var res = post.Comments.FirstOrDefault(x => x.Id == dto.CommentId);
-        if (res == null)
-            throw new NotFoundException<PostComment>("Post comment not found");
-
-        var user = await _userRepo.GetByIdAsync(_userClaimService.GetId());
-        if (user == null) throw new NotFoundException<User>();
-
-        var commentLike = new PostCommentLike
-        {
-            PostCommentId = dto.CommentId,
-            LikedUserId = user.Id,
-        };
-
-        post.Comments.FirstOrDefault(x => x.Id == dto.CommentId)?.Likes.Add(commentLike);
-        _postRepository.Update(post);
-        await _postRepository.SaveAsync();
+        return post;
     }
 }

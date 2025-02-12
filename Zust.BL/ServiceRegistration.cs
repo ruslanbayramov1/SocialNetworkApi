@@ -32,6 +32,9 @@ public static class ServiceRegistration
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IPostService, PostService>();
         services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IPostLikeService, PostLikeService>();
+        services.AddScoped<ICommentLikeService, CommentLikeService>();
+        services.AddScoped<IPostCommentService, PostCommentService>();
 
         // external services
         services.AddScoped<IUserClaimService, UserClaimService>();
