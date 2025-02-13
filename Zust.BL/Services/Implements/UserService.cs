@@ -52,7 +52,7 @@ public class UserService : IUserService
                 Id = x.Id,
                 Content = x.Content,
                 ImageUrl = x.ImageUrl,
-                LikeCount = x.Likes.Count,
+                LikeCount = x.Likes.Count(),
                 Comments = x.Comments
                 .Where(y => y.ParentCommentId == null)
                 .Select(y => new PostCommentGetDto
@@ -106,7 +106,7 @@ public class UserService : IUserService
         });
         if (user == null) throw new NotFoundException<User>();
 
-        int count = user.Posts.Sum(x => x.Likes.Count);
+        int count = user.Posts.Sum(x => x.Likes.Count());
 
         UserProfileGetDto? userProfile = await _userRepo.GetByIdAsync(id,x => new UserProfileGetDto {
             FirstName = user.FirstName,

@@ -1,13 +1,10 @@
 ﻿using Zust.BL.DTOs.PostLikes;
 using Zust.BL.DTOs.Users;
-using Zust.BL.Enums;
 using Zust.BL.Exceptions.Common;
 using Zust.BL.ExternalServices.Interfaces;
 using Zust.BL.Services.Interfaces;
 using Zust.Core.Entities;
-using Zust.Core.Enums;
 using Zust.Core.Interfaces.Repositories;
-using Zust.Core.MongoEntities;
 
 namespace Zust.BL.Services.Implements;
 
@@ -17,14 +14,14 @@ public class PostLikeService : IPostLikeService
     private readonly IPostLikeRepository _postLikeRepo;
     private readonly IUserRepository _userRepo;
     private readonly IUserClaimService _userClaimService;
-    private readonly IMongoDbService _mongoDbService;
-    public PostLikeService(IPostService postService, IPostLikeRepository postLikeRepository, IUserRepository userRepository, IUserClaimService userClaimService, IMongoDbService mongoDbService)
+    private readonly INotificationService _notificationService;
+    public PostLikeService(IPostService postService, IPostLikeRepository postLikeRepository, IUserRepository userRepository, IUserClaimService userClaimService, INotificationService notificationService)
     {
         _postService = postService;
         _postLikeRepo = postLikeRepository;
         _userRepo = userRepository;
         _userClaimService = userClaimService;
-        _mongoDbService = mongoDbService;
+        _notificationService = notificationService;
     }
 
     public async Task<List<PostLikeGetDto>> GetPostLikes(Guid postId)
@@ -72,19 +69,7 @@ public class PostLikeService : IPostLikeService
 
         await _postLikeRepo.SaveAsync();
 
-        if (postLikeBefore == null)
-        { 
-            Notification notification = new Notification
-            {
-                SenderId = user.Id,
-                ReceiverId = post.PostedUser.Id,
-                RelatedEntityId = post.Id.ToString(),
-                Type = NotificationTypes.Post,
-                Action = NotificationActions.Like
-            };
-
-            // then fetch it from db and give to client with link (endpoint with relatedentityid) and message
-            await _mongoDbService.InsertToCollectionAsync(notification, MongoCollections.Notifications); 
-        }
+        // if a like is creating and liked user is not posted users himself, then store notification in MongoDB
+        await _notificationService.CratePostLikeNotification(user, post, postLikeBefore != null);
     }
 }

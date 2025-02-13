@@ -15,13 +15,15 @@ public class CommentLikeService : ICommentLikeService
     private readonly IUserClaimService _userClaimService;
     private readonly IPostCommentLikeRepository _postCommentLikeRepo;
     private readonly IPostCommentRepository _postCommentRepo;
-    public CommentLikeService(IPostService postService, IUserRepository userRepository, IUserClaimService userClaimService, IPostCommentLikeRepository postCommentLikeRepository, IPostCommentRepository postCommentRepo)
+    private readonly INotificationService _notificationService;
+    public CommentLikeService(IPostService postService, IUserRepository userRepository, IUserClaimService userClaimService, IPostCommentLikeRepository postCommentLikeRepository, IPostCommentRepository postCommentRepo, INotificationService notificationService)
     {
         _postService = postService;
         _userRepo = userRepository;
         _userClaimService = userClaimService;
         _postCommentLikeRepo = postCommentLikeRepository;
         _postCommentRepo = postCommentRepo;
+        _notificationService = notificationService;
     }
 
     public async Task CreateCommentLikeAsync(Guid commentId)
@@ -66,6 +68,9 @@ public class CommentLikeService : ICommentLikeService
         }
 
         await _postCommentLikeRepo.SaveAsync();
+
+        // notification on comment like
+        await _notificationService.CrateCommentLikeNotification(user, postComment, postCommentLike != null);
     }
 
     public async Task<List<PostCommentLikeGetDto>> GetCommentLikes(Guid commentId)

@@ -16,11 +16,17 @@ public class MongoDbService : IMongoDbService
         var client = new MongoClient(connectionString);
         _database = client.GetDatabase(MongoOption.DatabaseName);
 
-        CreatePostNotificationIndexesAsync().Wait();
+        CreateNotificationIndexesAsync().Wait();
     }
 
     public IMongoCollection<T> GetCollection<T>(MongoCollections collectionName)
         => _database.GetCollection<T>(collectionName.ToString());
+
+    public async Task InsertManyToCollectionAsync<T>(List<T> data, MongoCollections collectionName)
+    {
+        var collection = GetCollection<T>(collectionName);
+        await collection.InsertManyAsync(data);
+    }
 
     public async Task InsertToCollectionAsync<T>(T data, MongoCollections collectionName)
     {
@@ -28,7 +34,7 @@ public class MongoDbService : IMongoDbService
         await collection.InsertOneAsync(data);
     }
 
-    private async Task CreatePostNotificationIndexesAsync()
+    private async Task CreateNotificationIndexesAsync()
     {
         var notificationCollection = GetCollection<Notification>(MongoCollections.Notifications);
 

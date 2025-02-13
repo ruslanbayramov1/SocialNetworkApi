@@ -13,17 +13,33 @@ public class PostCommentService : IPostCommentService
     private readonly IPostRepository _postRepo;
     private readonly IUserClaimService _userClaimService;
     private readonly IPostCommentRepository _postCommentRepo;
-    public PostCommentService(IPostRepository postRepository, IUserClaimService userClaimService, IPostCommentRepository postCommentRepo, IUserService userService)
+    private readonly IPostService _postService;
+    private readonly IUserRepository _userRepo;
+    private readonly INotificationService _notificationService;
+    public PostCommentService(IPostRepository postRepository, IUserClaimService userClaimService, IPostCommentRepository postCommentRepo, IUserService userService, IPostService postService, IUserRepository userRepo, INotificationService notificationService)
     {
         _postRepo = postRepository;
         _userClaimService = userClaimService;
         _postCommentRepo = postCommentRepo;
+        _postService = postService;
+        _userRepo = userRepo;
+        _notificationService = notificationService;
     }
 
     public async Task CreateCommentAsync(PostCommentCreateDto dto)
     {
-        bool isPostExists = await _postRepo.IsExistsAsync(dto.PostId);
-        if (!isPostExists) throw new NotFoundException<Post>();
+        var post = await _postService.GetPostModelByIdAsync(dto.PostId);
+        if (post == null) throw new NotFoundException<Post>();
+
+        var user = await _userRepo.GetByIdAsync(_userClaimService.GetId());
+        if (user == null) throw new NotFoundException<User>();
+
+        PostComment? parentComment = new();
+        if (dto.ParentCommentId != null)
+        { 
+            parentComment = await _postCommentRepo.GetByIdAsync(dto.ParentCommentId.Value);
+            if (parentComment == null) throw new NotFoundException("Comment");
+        }
 
         var comment = new PostComment
         {
@@ -35,6 +51,9 @@ public class PostCommentService : IPostCommentService
 
         await _postCommentRepo.AddAsync(comment);
         await _postCommentRepo.SaveAsync();
+
+        // notification in MongoDB
+        await _notificationService.CreateCommentNotification(user, comment, post, parentComment);
     }
 
     public async Task<PostCommentGetDto> GetCommentAsync(Guid commentId)
