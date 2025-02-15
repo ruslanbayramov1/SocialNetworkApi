@@ -14,58 +14,9 @@ namespace Zust.BL.Services.Implements;
 public class UserService : IUserService
 {
     private readonly IUserRepository _userRepo;
-    private readonly ILanguageRepository _languageRepo;
-    public UserService(IUserRepository userRepo, ILanguageRepository languageRepo)
+    public UserService(IUserRepository userRepo)
     {
         _userRepo = userRepo;
-        _languageRepo = languageRepo;
-    }
-
-    public async Task<UserGetDto> GetUserById(Guid id)
-    {
-        var userGet = await _userRepo.GetByIdAsync(id);
-        if (userGet == null) throw new NotFoundException<User>();
-
-        var roleName = Enum.GetName(typeof(Roles), userGet.Role);
-
-        var userProfile = await _userRepo.GetByIdAsync(id, user => new UserGetDto
-        {
-            FirstName = user.FirstName,
-            LastName = user.LastName,
-            Email = user.Email,
-            CoverImageUrl = user.CoverImageUrl!,
-            ProfileImageUrl = user.ProfileImageUrl!,
-            Role = roleName,
-            UserName = user.UserName,
-            Address = user.Address,
-            BackupEmail = user.BackupEmail,
-            BloodGroup = user.BloodGroup.Name,
-            DateOfBirth = user.DateOfBirth,
-            Gender = user.Gender.Name,
-            Website = user.Website,
-            IsEmailConfirmed = user.IsEmailConfirmed,
-            Occupation = user.Occupation.Name,
-            Language = user.Language.Name,
-            RelationStatus = user.RelationStatus.Name,
-            Posts = user.Posts.Select(x => new PostGetDto
-            {
-                Id = x.Id,
-                Content = x.Content,
-                ImageUrl = x.ImageUrl,
-                LikeCount = x.Likes.Count(),
-                Comments = x.Comments
-                .Where(y => y.ParentCommentId == null)
-                .Select(y => new PostCommentGetDto
-                {
-                    Id = y.Id,
-                    PostId = y.PostId,
-                    Content = y.Content,
-                    ParentCommentId = y.ParentCommentId,
-                }).ToList(),
-            }).ToList(),
-        }); 
-
-        return userProfile;
     }
 
     public async Task<UserProfileGetDto> GetUserProfileById(Guid id)
@@ -98,15 +49,30 @@ public class UserService : IUserService
             UpdatedAt = x.UpdatedAt,
             UserName = x.UserName,
             Website = x.Website,
-            Posts = x.Posts,
+            Posts = x.Posts.Select(y => new Post
+            { 
+                Comments = y.Comments,
+                Content = y.Content,
+                CreatedAt = y.CreatedAt,
+                UpdatedAt = y.UpdatedAt,
+                Id = y.Id,
+                Likes = y.Likes,
+                ImageUrl = y.ImageUrl,
+                PostedUser = y.PostedUser,
+                PostedUserId = y.PostedUserId,
+                DeletedAt = x.DeletedAt,
+                IsDeleted = x.IsDeleted
+            }).ToList(),
             Role = x.Role,
             PostCommentLikes = x.PostCommentLikes,
             PostComments = x.PostComments,
             PostLikes = x.PostLikes,
+            Followings = x.Followings,
+            Followers = x.Followers,
         });
         if (user == null) throw new NotFoundException<User>();
 
-        int count = user.Posts.Sum(x => x.Likes.Count());
+        var likes = user.Posts.SelectMany(x => x.Likes);
 
         UserProfileGetDto? userProfile = await _userRepo.GetByIdAsync(id,x => new UserProfileGetDto {
             FirstName = user.FirstName,
@@ -116,9 +82,9 @@ public class UserService : IUserService
             ProfileImageUrl = user.ProfileImageUrl!,
             Role = Enum.GetName(typeof(Roles), user.Role)!,
             UserName = user.UserName,
-            FollowerCount = 0,
-            FollowingCount = 0,
-            LikeCount = count
+            FollowerCount = x.Followers.Count(),
+            FollowingCount = x.Followings.Count(),
+            LikeCount = likes.Count()
         });
 
         return userProfile;

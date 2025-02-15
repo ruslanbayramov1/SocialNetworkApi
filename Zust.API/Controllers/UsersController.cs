@@ -17,14 +17,6 @@ public class UsersController : ControllerBase
 
     [HttpGet]
     [Route("[action]")]
-    public async Task<IActionResult> GetById(Guid userId)
-    {
-        var user = await _userService.GetUserById(userId);
-        return Ok(user);
-    }
-
-    [HttpGet]
-    [Route("[action]")]
     public async Task<IActionResult> GetProfileById(Guid userId)
     {
         var user = await _userService.GetUserProfileById(userId);

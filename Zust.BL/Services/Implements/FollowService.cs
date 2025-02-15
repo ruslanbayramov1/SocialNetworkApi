@@ -61,7 +61,7 @@ public class FollowService : IFollowService
                 ProfileImageUrl = x.FollowerUser.ProfileImageUrl,
                 FollowerCount = x.FollowerUser.Followers.Count(),
                 FollowingCount = x.FollowerUser.Followings.Count(),
-                LikeCount = x.FollowerUser.Posts.Select(y => y.Likes).Count(),
+                LikeCount = x.FollowerUser.Posts.SelectMany(y => y.Likes).Count(),
             }
         });
 
@@ -83,7 +83,7 @@ public class FollowService : IFollowService
                 ProfileImageUrl = x.FollowingUser.ProfileImageUrl,
                 FollowerCount = x.FollowingUser.Followers.Count(),
                 FollowingCount = x.FollowingUser.Followings.Count(),
-                LikeCount = x.FollowingUser.Posts.Select(y => y.Likes).Count(),
+                LikeCount = x.FollowingUser.Posts.SelectMany(y => y.Likes).Count(),
             }
         });
 
