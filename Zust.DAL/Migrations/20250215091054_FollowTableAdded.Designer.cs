@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Zust.DAL.Contexts;
 
@@ -11,9 +12,11 @@ using Zust.DAL.Contexts;
 namespace Zust.DAL.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250215091054_FollowTableAdded")]
+    partial class FollowTableAdded
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -54,7 +57,7 @@ namespace Zust.DAL.Migrations
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("BloodGroups", (string)null);
+                    b.ToTable("BloodGroups");
                 });
 
             modelBuilder.Entity("Zust.Core.Entities.Follow", b =>
@@ -89,7 +92,7 @@ namespace Zust.DAL.Migrations
 
                     b.HasIndex("FollowingId");
 
-                    b.ToTable("Follows", (string)null);
+                    b.ToTable("Follows");
                 });
 
             modelBuilder.Entity("Zust.Core.Entities.Gender", b =>
@@ -124,7 +127,7 @@ namespace Zust.DAL.Migrations
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("Genders", (string)null);
+                    b.ToTable("Genders");
                 });
 
             modelBuilder.Entity("Zust.Core.Entities.Language", b =>
@@ -159,7 +162,7 @@ namespace Zust.DAL.Migrations
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("Languages", (string)null);
+                    b.ToTable("Languages");
                 });
 
             modelBuilder.Entity("Zust.Core.Entities.Occupation", b =>
@@ -194,7 +197,7 @@ namespace Zust.DAL.Migrations
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("Occupations", (string)null);
+                    b.ToTable("Occupations");
                 });
 
             modelBuilder.Entity("Zust.Core.Entities.Post", b =>
@@ -233,7 +236,7 @@ namespace Zust.DAL.Migrations
 
                     b.HasIndex("PostedUserId");
 
-                    b.ToTable("Posts", (string)null);
+                    b.ToTable("Posts");
                 });
 
             modelBuilder.Entity("Zust.Core.Entities.PostComment", b =>
@@ -278,7 +281,7 @@ namespace Zust.DAL.Migrations
 
                     b.HasIndex("PostId");
 
-                    b.ToTable("PostComments", (string)null);
+                    b.ToTable("PostComments");
                 });
 
             modelBuilder.Entity("Zust.Core.Entities.PostCommentLike", b =>
@@ -313,7 +316,7 @@ namespace Zust.DAL.Migrations
 
                     b.HasIndex("PostCommentId");
 
-                    b.ToTable("PostCommentLikes", (string)null);
+                    b.ToTable("PostCommentLikes");
                 });
 
             modelBuilder.Entity("Zust.Core.Entities.PostLike", b =>
@@ -348,7 +351,7 @@ namespace Zust.DAL.Migrations
 
                     b.HasIndex("PostId");
 
-                    b.ToTable("PostLikes", (string)null);
+                    b.ToTable("PostLikes");
                 });
 
             modelBuilder.Entity("Zust.Core.Entities.RelationStatus", b =>
@@ -383,7 +386,7 @@ namespace Zust.DAL.Migrations
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("RelationStatuses", (string)null);
+                    b.ToTable("RelationStatuses");
                 });
 
             modelBuilder.Entity("Zust.Core.Entities.User", b =>
@@ -498,7 +501,7 @@ namespace Zust.DAL.Migrations
                     b.HasIndex("UserName")
                         .IsUnique();
 
-                    b.ToTable("Users", (string)null);
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("Zust.Core.Entities.Follow", b =>

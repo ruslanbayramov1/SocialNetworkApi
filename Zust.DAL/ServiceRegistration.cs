@@ -21,6 +21,7 @@ public static class ServiceRegistration
         services.AddScoped<IPostCommentRepository, PostCommentRepository>();
         services.AddScoped<IPostLikeRepository, PostLikeRepository>();
         services.AddScoped<IPostCommentLikeRepository, PostCommentLikeRepository>();
+        services.AddScoped<IFollowRepository, FollowRepository>();
 
         return services;
     }

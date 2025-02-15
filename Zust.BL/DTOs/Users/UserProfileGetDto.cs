@@ -10,6 +10,6 @@ public class UserProfileGetDto
     public int LikeCount { get; set; }
     public int FollowerCount { get; set; }
     public int FollowingCount { get; set; }
-    public string ProfileImageUrl { get; set; }
-    public string CoverImageUrl { get; set; }
+    public string? ProfileImageUrl { get; set; }
+    public string? CoverImageUrl { get; set; }
 }

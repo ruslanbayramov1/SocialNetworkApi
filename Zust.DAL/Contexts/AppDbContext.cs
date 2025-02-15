@@ -45,4 +45,5 @@ public class AppDbContext : DbContext
     public DbSet<PostComment> PostComments { get; set; }
     public DbSet<PostCommentLike> PostCommentLikes { get; set; }
     public DbSet<PostLike> PostLikes { get; set; }
+    public DbSet<Follow> Follows { get; set; }
 }

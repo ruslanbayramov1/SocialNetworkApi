@@ -29,8 +29,33 @@ public class User : BaseEntity
     public string? CoverImageUrl { get; set; } = "https://finalprojectolympus.blob.core.windows.net/images/defaultusercover.jpg";
     public bool IsEmailConfirmed { get; set; }
 
-    public ICollection<Post> Posts { get; set; } = new List<Post>(); // users himself Posts
-    public ICollection<PostComment> PostComments { get; set; } = new List<PostComment>(); // users commented posts (comments on someones post)
-    public ICollection<PostLike> PostLikes { get; set; } = new List<PostLike>(); // users liked posts (likes on someones post)
-    public ICollection<PostCommentLike> PostCommentLikes { get; set; } = new List<PostCommentLike>(); // users liked comments (likes on someones comment)
+    /// <summary>
+    /// The collection of posts created by the user.
+    /// </summary>
+    public ICollection<Post> Posts { get; set; } = new List<Post>();
+
+    /// <summary>
+    /// The collection of comments made by the user on various posts.
+    /// </summary>
+    public ICollection<PostComment> PostComments { get; set; } = new List<PostComment>();
+
+    /// <summary>
+    /// The collection of posts that the user has liked.
+    /// </summary>
+    public ICollection<PostLike> PostLikes { get; set; } = new List<PostLike>();
+
+    /// <summary>
+    /// The collection of comments that the user has liked.
+    /// </summary>
+    public ICollection<PostCommentLike> PostCommentLikes { get; set; } = new List<PostCommentLike>();
+
+    /// <summary>
+    /// The collection of users who follow this user.
+    /// </summary>
+    public ICollection<Follow> Followers { get; set; } = new List<Follow>();
+
+    /// <summary>
+    /// The collection of users who the user follows.
+    /// </summary>
+    public ICollection<Follow> Followings { get; set; } = new List<Follow>();
 }

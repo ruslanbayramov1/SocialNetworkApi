@@ -101,6 +101,7 @@ public static class ServiceRegistration
                 Exception ex = feature!.Error;
                 if (ex is IBaseException ibe)
                 {
+                    context.Response.StatusCode = ibe.StatusCode;
                     await context.Response.WriteAsJsonAsync(new
                     {
                         StatusCode = ibe.StatusCode,
@@ -109,6 +110,7 @@ public static class ServiceRegistration
                 }
                 else
                 {
+                    context.Response.StatusCode = StatusCodes.Status400BadRequest;
                     await context.Response.WriteAsJsonAsync(new
                     {
                         StatusCode = StatusCodes.Status400BadRequest,
