@@ -62,7 +62,7 @@ public class PostLikeService : IPostLikeService
 
         // if a like is creating and liked user is not posted users himself, then store notification in MongoDB
         var isLikedBefore = IsLikedBefore(new PostLikeCreateDto { PostId = post.Id });
-        await _notificationService.CratePostLikeNotification(user, post, isLikedBefore == null);
+        await _notificationService.CratePostLikeNotification(user, post);
     }
 
     public async Task DeleteAsync(Guid id)

@@ -10,15 +10,13 @@ namespace Zust.BL.Services.Implements;
 
 public class CommentLikeService : ICommentLikeService
 {
-    private readonly IPostService _postService;
     private readonly IUserRepository _userRepo;
     private readonly IUserClaimService _userClaimService;
     private readonly IPostCommentLikeRepository _postCommentLikeRepo;
     private readonly IPostCommentRepository _postCommentRepo;
     private readonly INotificationService _notificationService;
-    public CommentLikeService(IPostService postService, IUserRepository userRepository, IUserClaimService userClaimService, IPostCommentLikeRepository postCommentLikeRepository, IPostCommentRepository postCommentRepo, INotificationService notificationService)
+    public CommentLikeService(IUserRepository userRepository, IUserClaimService userClaimService, IPostCommentLikeRepository postCommentLikeRepository, IPostCommentRepository postCommentRepo, INotificationService notificationService)
     {
-        _postService = postService;
         _userRepo = userRepository;
         _userClaimService = userClaimService;
         _postCommentLikeRepo = postCommentLikeRepository;
@@ -26,51 +24,26 @@ public class CommentLikeService : ICommentLikeService
         _notificationService = notificationService;
     }
 
-    public async Task CreateCommentLikeAsync(Guid commentId)
+    public async Task CreateCommentLikeAsync(PostCommentLikeCreateDto dto)
     {
         var user = await _userRepo.GetByIdAsync(_userClaimService.GetId());
         if (user == null) throw new NotFoundException<User>();
 
-        PostComment? postComment = await _postCommentRepo.GetByIdAsync(commentId, x => new PostComment
-        {
-            CommentedUser = x.CommentedUser,
-            CommentedUserId = x.CommentedUserId,
-            Content = x.Content,
-            CreatedAt = x.CreatedAt,
-            DeletedAt = x.DeletedAt,
-            Id = x.Id,
-            IsDeleted = x.IsDeleted,
-            Likes = x.Likes,
-            ParentComment = x.ParentComment,
-            ParentCommentId = x.ParentCommentId,
-            Post = x.Post,
-            PostId = x.PostId,
-            Replies = x.Replies,
-            UpdatedAt = x.UpdatedAt
-        });
-
+        PostComment? postComment = await _postCommentRepo.GetByIdAsync(dto.CommentId);
         if (postComment == null) throw new NotFoundException("Post comment");
 
-        var postCommentLike = await _postCommentLikeRepo.GetByExpressionAsync(x => x.LikedUserId == user.Id && x.PostCommentId == postComment.Id);
-
-        if (postCommentLike == null)
+        var commentLike = new PostCommentLike
         {
-            var commentLike = new PostCommentLike
-            {
-                PostCommentId = commentId,
-                LikedUserId = user.Id,
-            };
-            await _postCommentLikeRepo.AddAsync(commentLike);
-        }
-        else
-        {
-            _postCommentLikeRepo.Remove(postCommentLike);
-        }
+            PostCommentId = dto.CommentId,
+            LikedUserId = user.Id,
+        };
 
+        await _postCommentLikeRepo.AddAsync(commentLike);
         await _postCommentLikeRepo.SaveAsync();
 
         // notification on comment like
-        await _notificationService.CrateCommentLikeNotification(user, postComment, postCommentLike != null);
+        var isLikedBefore = await IsLikedBefore(dto);
+        await _notificationService.CrateCommentLikeNotification(user, postComment);
     }
 
     public async Task<List<PostCommentLikeGetDto>> GetCommentLikes(Guid commentId)
@@ -93,5 +66,25 @@ public class CommentLikeService : ICommentLikeService
         });
 
         return commentLike;
+    }
+
+    public async Task DeleteAsync(Guid id)
+    {
+        var likedPost = await _postCommentLikeRepo.GetByIdAsync(id);
+        if (likedPost == null) throw new NotFoundException<User>();
+
+        await _postCommentLikeRepo.RemoveAsync(id);
+        await _postCommentLikeRepo.SaveAsync();
+    }
+
+    public async Task<Guid?> IsLikedBefore(PostCommentLikeCreateDto dto)
+    {
+        var res = await _postCommentLikeRepo.GetByExpressionAsync(x => x.PostCommentId == dto.CommentId && x.LikedUserId == _userClaimService.GetId());
+        if (res != null)
+        {
+            return res.Id;
+        }
+
+        return null;
     }
 }

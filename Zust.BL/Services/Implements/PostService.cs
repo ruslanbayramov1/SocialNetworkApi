@@ -113,38 +113,6 @@ public class PostService : IPostService
         await _postRepository.SaveAsync();
     }
 
-    public async Task CreateCommentLikeAsync(PostCommentLikeCreateDto dto)
-    {
-        var post = await GetPostModelByIdAsync(dto.PostId);
-
-        if (post == null)
-            throw new NotFoundException<Post>();
-
-        var user = await _userRepo.GetByIdAsync(_userClaimService.GetId());
-        if (user == null) throw new NotFoundException<User>();
-
-        PostComment? postComment = post.Comments.FirstOrDefault(x => x.Id == dto.CommentId);
-        if (postComment == null) throw new NotFoundException("Post comment");
-
-        var postCommentLike = await _postCommentLikeRepository.GetByExpressionAsync(x => x.LikedUserId == user.Id && x.PostCommentId == postComment.Id);
-
-        if (postCommentLike == null)
-        {
-            var commentLike = new PostCommentLike
-            {
-                PostCommentId = dto.CommentId,
-                LikedUserId = user.Id,
-            };
-            await _postCommentLikeRepository.AddAsync(commentLike);
-        }
-        else
-        {
-            _postCommentLikeRepository.Remove(postCommentLike);
-        }
-
-        await _postRepository.SaveAsync();
-    }
-
     // helper
     public async Task<Post> GetPostModelByIdAsync(Guid postId)
     {

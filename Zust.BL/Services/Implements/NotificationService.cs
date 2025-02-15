@@ -13,10 +13,10 @@ public class NotificationService : INotificationService
     {
         _mongoDbService = mongoDbService;
     }
-    public async Task CratePostLikeNotification(User user, Post post, bool isAlreadyLiked)
+    public async Task CratePostLikeNotification(User user, Post post)
     {
-        // if post is already liked, or liking user is post owner himself, dont do anything
-        if (isAlreadyLiked || post.PostedUser.Id == user.Id)
+        // if user is post owner himself, dont do anything
+        if (post.PostedUser.Id == user.Id)
             return;
 
         Notification notification = new Notification
@@ -78,10 +78,10 @@ public class NotificationService : INotificationService
             await _mongoDbService.InsertManyToCollectionAsync(notifications, MongoCollections.Notifications);
     }
 
-    public async Task CrateCommentLikeNotification(User user, PostComment postComment, bool isAlreadyLiked)
+    public async Task CrateCommentLikeNotification(User user, PostComment postComment)
     {
-        // if comment is already liked, or liking user is commentors himself, dont do anything
-        if (isAlreadyLiked || postComment.CommentedUserId == user.Id)
+        // if the user is commentors himself, dont do anything
+        if (postComment.CommentedUserId == user.Id)
             return;
 
         var notification = new Notification
