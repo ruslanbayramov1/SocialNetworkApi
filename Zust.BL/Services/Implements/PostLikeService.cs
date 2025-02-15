@@ -44,32 +44,44 @@ public class PostLikeService : IPostLikeService
         return postLikes;
     }
 
-    public async Task CreatePostLikeAsync(Guid postId)
+    public async Task CreatePostLikeAsync(PostLikeCreateDto dto)
     {
-        var post = await _postService.GetPostModelByIdAsync(postId);
+        var post = await _postService.GetPostModelByIdAsync(dto.PostId);
 
         var user = await _userRepo.GetByIdAsync(_userClaimService.GetId());
         if (user == null) throw new NotFoundException<User>();
 
-        var postLikeBefore = post.Likes.FirstOrDefault(x => x.LikedUserId == user.Id);
-
-        if (postLikeBefore != null) // if user alreadt liked then remove, else - add like
+        var postLike = new PostLike
         {
-            _postLikeRepo.Remove(postLikeBefore);
-        }
-        else
-        {
-            var postLike = new PostLike
-            {
-                PostId = postId,
-                LikedUserId = user.Id
-            };
-            await _postLikeRepo.AddAsync(postLike);
-        }
+            PostId = dto.PostId,
+            LikedUserId = user.Id
+        };
 
+        await _postLikeRepo.AddAsync(postLike);
         await _postLikeRepo.SaveAsync();
 
         // if a like is creating and liked user is not posted users himself, then store notification in MongoDB
-        await _notificationService.CratePostLikeNotification(user, post, postLikeBefore != null);
+        var isLikedBefore = IsLikedBefore(new PostLikeCreateDto { PostId = post.Id });
+        await _notificationService.CratePostLikeNotification(user, post, isLikedBefore == null);
+    }
+
+    public async Task DeleteAsync(Guid id)
+    {
+        var likedPost = await _postLikeRepo.GetByIdAsync(id);
+        if (likedPost == null) throw new NotFoundException<User>();
+
+        await _postLikeRepo.RemoveAsync(id);
+        await _postLikeRepo.SaveAsync();
+    }
+
+    public async Task<Guid?> IsLikedBefore(PostLikeCreateDto dto)
+    {
+        var res = await _postLikeRepo.GetByExpressionAsync(x => x.PostId == dto.PostId && x.LikedUserId == _userClaimService.GetId());
+        if (res != null)
+        { 
+            return res.Id;
+        }
+
+        return null;
     }
 }

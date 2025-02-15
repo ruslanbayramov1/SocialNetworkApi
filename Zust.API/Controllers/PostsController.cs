@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Zust.BL.Attributes;
 using Zust.BL.DTOs.PostComments;
+using Zust.BL.DTOs.PostLikes;
 using Zust.BL.DTOs.Posts;
 using Zust.BL.Services.Interfaces;
 
@@ -79,10 +80,20 @@ public class PostsController : ControllerBase
     }
 
     [HttpPost]
-    [Route("[action]/{postId:guid}")]
-    public async Task<IActionResult> Like(Guid postId)
+    [Route("[action]")]
+    public async Task<IActionResult> Like(PostLikeCreateDto dto)
     {
-        await _postLikeService.CreatePostLikeAsync(postId);
+        Guid? id = await _postLikeService.IsLikedBefore(dto);
+
+        if (id.HasValue)
+        {
+            await _postLikeService.DeleteAsync(id.Value);
+            return NoContent();
+        }
+        else
+        {
+            await _postLikeService.CreatePostLikeAsync(dto);
+        }
         return Created();
     }
 

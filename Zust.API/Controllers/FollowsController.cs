@@ -39,7 +39,7 @@ public class FollowsController : ControllerBase
         if (id.HasValue)
         {
             await _followService.DeleteAsync(id.Value);
-            res = "User unfollowed.";
+            return NoContent();
         }
         else
         {
@@ -47,6 +47,6 @@ public class FollowsController : ControllerBase
             res = resp;
         }
 
-        return Ok(res);
+        return StatusCode(StatusCodes.Status201Created, res);
     }
 }
