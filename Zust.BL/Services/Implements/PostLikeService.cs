@@ -1,4 +1,5 @@
-﻿using Zust.BL.DTOs.PostLikes;
+﻿using Zust.BL.DTOs.Notifications;
+using Zust.BL.DTOs.PostLikes;
 using Zust.BL.DTOs.Users;
 using Zust.BL.Exceptions.Common;
 using Zust.BL.ExternalServices.Interfaces;
@@ -61,8 +62,12 @@ public class PostLikeService : IPostLikeService
         await _postLikeRepo.SaveAsync();
 
         // if a like is creating and liked user is not posted users himself, then store notification in MongoDB
-        var isLikedBefore = IsLikedBefore(new PostLikeCreateDto { PostId = post.Id });
-        await _notificationService.CratePostLikeNotification(user, post);
+        await _notificationService.CratePostLikeNotification(new PostLikeNotificationDto 
+        { 
+            PostedUserId = post.PostedUserId, 
+            PostId = post.Id, 
+            UserId = user.Id
+        });
     }
 
     public async Task DeleteAsync(Guid id)

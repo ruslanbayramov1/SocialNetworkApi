@@ -1,4 +1,5 @@
 ﻿using Zust.BL.Constants;
+using Zust.BL.DTOs.Notifications;
 using Zust.BL.DTOs.PostCommentLikes;
 using Zust.BL.DTOs.PostComments;
 using Zust.BL.DTOs.Posts;
@@ -22,7 +23,8 @@ public class PostService : IPostService
     private readonly IAzureCloudBlobService _azureCloudBlobService;
     private readonly IUserService _userService;
     private readonly IPostCommentLikeRepository _postCommentLikeRepository;
-    public PostService(IPostRepository postRepository, IUserClaimService userClaimService, IUserRepository userRepo, IAzureCloudBlobService azureCloudBlobService, IUserService userService, IPostCommentLikeRepository postCommentLikeRepository)
+    private readonly INotificationService _notificationService;
+    public PostService(IPostRepository postRepository, IUserClaimService userClaimService, IUserRepository userRepo, IAzureCloudBlobService azureCloudBlobService, IUserService userService, IPostCommentLikeRepository postCommentLikeRepository, INotificationService notificationService)
     {
         _postRepository = postRepository;
         _userClaimService = userClaimService;
@@ -30,6 +32,7 @@ public class PostService : IPostService
         _azureCloudBlobService = azureCloudBlobService;
         _userService = userService;
         _postCommentLikeRepository = postCommentLikeRepository;
+        _notificationService = notificationService;
     }
 
     public async Task<List<PostGetDto>> GetUserPostAsync(Guid userId)
@@ -111,6 +114,8 @@ public class PostService : IPostService
         };
         await _postRepository.AddAsync(model);
         await _postRepository.SaveAsync();
+
+        await _notificationService.CreatePostNotificationForAllFollowers(new PostNotificationDto { PostId = model.Id });
     }
 
     // helper

@@ -1,10 +1,11 @@
-﻿using Zust.Core.Entities;
+﻿using Zust.BL.DTOs.Notifications;
 
 namespace Zust.BL.Services.Interfaces;
 
 public interface INotificationService
 {
-    Task CratePostLikeNotification(User user, Post post);
-    Task CreateCommentNotification(User user, PostComment comment, Post post, PostComment parentComment);
-    Task CrateCommentLikeNotification(User user, PostComment postComment);
+    Task CratePostLikeNotification(PostLikeNotificationDto dto);
+    Task CreateCommentNotification(CommentNotificationDto dto);
+    Task CrateCommentLikeNotification(CommentLikeNotification dto);
+    Task CreatePostNotificationForAllFollowers(PostNotificationDto dto);
 }

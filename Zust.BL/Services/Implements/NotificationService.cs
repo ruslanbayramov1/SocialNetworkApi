@@ -1,7 +1,9 @@
-﻿using Zust.BL.Enums;
+﻿using Zust.BL.DTOs.Notifications;
+using Zust.BL.Enums;
+using Zust.BL.ExternalServices.Interfaces;
 using Zust.BL.Services.Interfaces;
-using Zust.Core.Entities;
 using Zust.Core.Enums;
+using Zust.Core.Interfaces.Repositories;
 using Zust.Core.MongoEntities;
 
 namespace Zust.BL.Services.Implements;
@@ -9,65 +11,69 @@ namespace Zust.BL.Services.Implements;
 public class NotificationService : INotificationService
 {
     private readonly IMongoDbService _mongoDbService;
-    public NotificationService(IMongoDbService mongoDbService)
+    private readonly IUserClaimService _userClaimService;
+    private readonly IFollowRepository _followRepo;
+    public NotificationService(IMongoDbService mongoDbService, IUserClaimService userClaimService, IFollowRepository followRepository)
     {
         _mongoDbService = mongoDbService;
+        _userClaimService = userClaimService;
+        _followRepo = followRepository;
     }
-    public async Task CratePostLikeNotification(User user, Post post)
+    public async Task CratePostLikeNotification(PostLikeNotificationDto dto)
     {
         // if user is post owner himself, dont do anything
-        if (post.PostedUser.Id == user.Id)
+        if (dto.PostedUserId == dto.UserId)
             return;
 
         Notification notification = new Notification
         {
-            SenderId = user.Id,
-            ReceiverId = post.PostedUser.Id,
-            RelatedEntityId = post.Id.ToString(),
+            SenderId = dto.UserId,
+            ReceiverId = dto.PostedUserId,
+            RelatedEntityId = dto.PostId.ToString(),
             Type = NotificationTypes.Post,
             Action = NotificationActions.Like
         };
         await _mongoDbService.InsertToCollectionAsync(notification, MongoCollections.Notifications);
     }
 
-    public async Task CreateCommentNotification(User user, PostComment comment, Post post, PostComment parentComment)
+    public async Task CreateCommentNotification(CommentNotificationDto dto)
     {
         // notification in MongoDB
         List<Notification> notifications = new();
         // 1. Notify the post owner (if the post owner is not the commenter)
-        if (comment.ParentCommentId == null && post.PostedUserId != user.Id)
+        if (dto.ParentCommentId == null && dto.PostedUserId != dto.UserId)
         {
             notifications.Add(new Notification
             {
-                SenderId = user.Id,
-                ReceiverId = post.PostedUserId,
-                RelatedEntityId = comment.Id.ToString(),
+                SenderId = dto.UserId,
+                ReceiverId = dto.PostedUserId,
+                RelatedEntityId = dto.CommentId.ToString(),
                 Type = NotificationTypes.Post,
                 Action = NotificationActions.Comment,
             });
         }
 
         // 2. If it is a reply
-        if (comment.ParentCommentId != null)
+        if (dto.ParentCommentId != null)
         {
             // 2.1. In every case, notify who somebody replying to his comment
             notifications.Add(new Notification
             {
-                SenderId = user.Id,
-                ReceiverId = parentComment.CommentedUserId,
-                RelatedEntityId = comment.Id.ToString(),
+                SenderId = dto.UserId,
+                ReceiverId = dto.CommentedUserId,
+                RelatedEntityId = dto.CommentId.ToString(),
                 Type = NotificationTypes.Comment,
                 Action = NotificationActions.Reply,
             });
 
             // 2.2. If replied comment is not by post owner, also notify him
-            if (post.PostedUserId != user.Id)
+            if (dto.PostedUserId != dto.UserId)
             {
                 notifications.Add(new Notification
                 {
-                    SenderId = user.Id,
-                    ReceiverId = post.PostedUserId,
-                    RelatedEntityId = comment.Id.ToString(),
+                    SenderId = dto.UserId,
+                    ReceiverId = dto.PostedUserId,
+                    RelatedEntityId = dto.CommentId.ToString(),
                     Type = NotificationTypes.Post,
                     Action = NotificationActions.Comment,
                 });
@@ -78,21 +84,35 @@ public class NotificationService : INotificationService
             await _mongoDbService.InsertManyToCollectionAsync(notifications, MongoCollections.Notifications);
     }
 
-    public async Task CrateCommentLikeNotification(User user, PostComment postComment)
+    public async Task CrateCommentLikeNotification(CommentLikeNotification dto)
     {
         // if the user is commentors himself, dont do anything
-        if (postComment.CommentedUserId == user.Id)
+        if (dto.CommentedUserId == dto.UserId)
             return;
 
         var notification = new Notification
         {
-            ReceiverId = postComment.CommentedUserId,
-            SenderId = user.Id,
-            RelatedEntityId = postComment.Id.ToString(),
+            ReceiverId = dto.CommentedUserId,
+            SenderId = dto.UserId,
+            RelatedEntityId = dto.CommentId.ToString(),
             Action = NotificationActions.Like,
             Type = NotificationTypes.Comment,
         };
 
         await _mongoDbService.InsertToCollectionAsync(notification, MongoCollections.Notifications);
+    }
+
+    public async Task CreatePostNotificationForAllFollowers(PostNotificationDto dto)
+    {
+        var notifications = await _followRepo.GetWhereAsync(x => x.FollowingId == _userClaimService.GetId(), x => new Notification
+        {
+            ReceiverId = x.FollowerId,
+            SenderId = x.FollowingId,
+            RelatedEntityId = dto.PostId.ToString(),
+            Type = NotificationTypes.Post,
+            Action = NotificationActions.Interaction,
+        });
+
+        await _mongoDbService.InsertManyToCollectionAsync(notifications, MongoCollections.Notifications);
     }
 }

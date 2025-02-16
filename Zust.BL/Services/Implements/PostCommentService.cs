@@ -1,4 +1,5 @@
-﻿using Zust.BL.DTOs.PostComments;
+﻿using Zust.BL.DTOs.Notifications;
+using Zust.BL.DTOs.PostComments;
 using Zust.BL.DTOs.Users;
 using Zust.BL.Exceptions.Common;
 using Zust.BL.ExternalServices.Interfaces;
@@ -53,7 +54,14 @@ public class PostCommentService : IPostCommentService
         await _postCommentRepo.SaveAsync();
 
         // notification in MongoDB
-        await _notificationService.CreateCommentNotification(user, comment, post, parentComment);
+        await _notificationService.CreateCommentNotification(new CommentNotificationDto
+        { 
+            UserId = user.Id,
+            PostedUserId = post.PostedUserId,
+            CommentedUserId = parentComment.CommentedUserId,
+            CommentId = comment.Id,
+            ParentCommentId = comment.ParentCommentId,
+        });
     }
 
     public async Task<PostCommentGetDto> GetCommentAsync(Guid commentId)

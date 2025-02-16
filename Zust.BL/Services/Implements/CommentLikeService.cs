@@ -1,4 +1,5 @@
-﻿using Zust.BL.DTOs.PostCommentLikes;
+﻿using Zust.BL.DTOs.Notifications;
+using Zust.BL.DTOs.PostCommentLikes;
 using Zust.BL.DTOs.Users;
 using Zust.BL.Exceptions.Common;
 using Zust.BL.ExternalServices.Interfaces;
@@ -42,8 +43,12 @@ public class CommentLikeService : ICommentLikeService
         await _postCommentLikeRepo.SaveAsync();
 
         // notification on comment like
-        var isLikedBefore = await IsLikedBefore(dto);
-        await _notificationService.CrateCommentLikeNotification(user, postComment);
+        await _notificationService.CrateCommentLikeNotification(new CommentLikeNotification
+        { 
+            UserId = user.Id,
+            CommentId = postComment.Id,
+            CommentedUserId = postComment.CommentedUserId
+        });
     }
 
     public async Task<List<PostCommentLikeGetDto>> GetCommentLikes(Guid commentId)

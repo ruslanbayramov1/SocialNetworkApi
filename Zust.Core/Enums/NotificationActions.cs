@@ -5,4 +5,5 @@ public enum NotificationActions
     Like,
     Comment,
     Reply,
+    Interaction
 }
