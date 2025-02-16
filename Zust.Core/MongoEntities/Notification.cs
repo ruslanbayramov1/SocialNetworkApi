@@ -14,6 +14,7 @@ public class Notification
     public Guid Id { get; set; } = Guid.NewGuid();
     [BsonRepresentation(BsonType.String)]
     public Guid SenderId { get; set; }
+    public string SenderName { get; set; } = null!;
     [BsonRepresentation(BsonType.String)]
     public Guid ReceiverId { get; set; }
     /// <summary>

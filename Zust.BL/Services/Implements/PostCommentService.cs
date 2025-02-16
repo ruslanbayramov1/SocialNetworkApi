@@ -54,9 +54,10 @@ public class PostCommentService : IPostCommentService
         await _postCommentRepo.SaveAsync();
 
         // notification in MongoDB
-        await _notificationService.CreateCommentNotification(new CommentNotificationDto
+        await _notificationService.CreateCommentNotification(new CommentNotificationCreateDto
         { 
-            UserId = user.Id,
+            SenderUserId = user.Id,
+            SenderUserName = user.UserName,
             PostedUserId = post.PostedUserId,
             CommentedUserId = parentComment.CommentedUserId,
             CommentId = comment.Id,

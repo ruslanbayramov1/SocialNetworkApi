@@ -22,6 +22,20 @@ public class MongoDbService : IMongoDbService
     public IMongoCollection<T> GetCollection<T>(MongoCollections collectionName)
         => _database.GetCollection<T>(collectionName.ToString());
 
+    public async Task<List<T>> GetCollectionList<T>(MongoCollections collectionName)
+    { 
+        var data = await _database.GetCollection<T>(collectionName.ToString()).FindAsync(null);
+        var dataList = await data.ToListAsync();
+        return dataList;
+    }
+
+    public async Task<List<T>> GetCollectionListWhere<T>(FilterDefinition<T> filter, MongoCollections collectionName)
+    {
+        var data = await _database.GetCollection<T>(collectionName.ToString()).FindAsync(filter);
+        var dataList = await data.ToListAsync();
+        return dataList;
+    }
+
     public async Task InsertManyToCollectionAsync<T>(List<T> data, MongoCollections collectionName)
     {
         var collection = GetCollection<T>(collectionName);

@@ -62,11 +62,12 @@ public class PostLikeService : IPostLikeService
         await _postLikeRepo.SaveAsync();
 
         // if a like is creating and liked user is not posted users himself, then store notification in MongoDB
-        await _notificationService.CratePostLikeNotification(new PostLikeNotificationDto 
+        await _notificationService.CratePostLikeNotification(new PostLikeNotificationCreateDto 
         { 
             PostedUserId = post.PostedUserId, 
             PostId = post.Id, 
-            UserId = user.Id
+            SenderUserId = user.Id,
+            SenderUserName = user.UserName,
         });
     }
 

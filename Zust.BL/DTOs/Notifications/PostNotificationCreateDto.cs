@@ -1,6 +1,6 @@
 ﻿namespace Zust.BL.DTOs.Notifications;
 
-public class PostNotificationDto
+public class PostNotificationCreateDto
 {
     public Guid PostId { get; set; }
 }

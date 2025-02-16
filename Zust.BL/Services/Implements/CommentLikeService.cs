@@ -43,9 +43,10 @@ public class CommentLikeService : ICommentLikeService
         await _postCommentLikeRepo.SaveAsync();
 
         // notification on comment like
-        await _notificationService.CrateCommentLikeNotification(new CommentLikeNotification
+        await _notificationService.CrateCommentLikeNotification(new CommentLikeNotificationCreateDto
         { 
-            UserId = user.Id,
+            SenderUserId = user.Id,
+            SenderUserName = user.UserName,
             CommentId = postComment.Id,
             CommentedUserId = postComment.CommentedUserId
         });

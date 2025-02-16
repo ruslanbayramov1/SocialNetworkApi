@@ -10,16 +10,26 @@ namespace Zust.API.Controllers;
 public class UsersController : ControllerBase
 {
     private readonly IUserService _userService;
-    public UsersController(IUserService userService)
+    private readonly INotificationService _notificationService;
+    public UsersController(IUserService userService, INotificationService notificationService)
     {
         _userService = userService;
+        _notificationService = notificationService;
     }
 
     [HttpGet]
-    [Route("[action]")]
+    [Route("[action]/{userId:guid}")]
     public async Task<IActionResult> GetProfileById(Guid userId)
     {
         var user = await _userService.GetUserProfileById(userId);
         return Ok(user);
+    }
+
+    [HttpGet]
+    [Route("[action]")]
+    public async Task<IActionResult> GetNotifications()
+    {
+        var data = await _notificationService.GetUserNotifications();
+        return Ok(data);
     }
 }

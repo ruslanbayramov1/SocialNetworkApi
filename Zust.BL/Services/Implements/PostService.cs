@@ -115,7 +115,7 @@ public class PostService : IPostService
         await _postRepository.AddAsync(model);
         await _postRepository.SaveAsync();
 
-        await _notificationService.CreatePostNotificationForAllFollowers(new PostNotificationDto { PostId = model.Id });
+        await _notificationService.CreatePostNotificationForAllFollowers(new PostNotificationCreateDto { PostId = model.Id });
     }
 
     // helper

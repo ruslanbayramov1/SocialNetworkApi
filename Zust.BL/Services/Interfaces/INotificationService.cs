@@ -4,8 +4,9 @@ namespace Zust.BL.Services.Interfaces;
 
 public interface INotificationService
 {
-    Task CratePostLikeNotification(PostLikeNotificationDto dto);
-    Task CreateCommentNotification(CommentNotificationDto dto);
-    Task CrateCommentLikeNotification(CommentLikeNotification dto);
-    Task CreatePostNotificationForAllFollowers(PostNotificationDto dto);
+    Task<List<NotificationGetDto>> GetUserNotifications();
+    Task CratePostLikeNotification(PostLikeNotificationCreateDto dto);
+    Task CreateCommentNotification(CommentNotificationCreateDto dto);
+    Task CrateCommentLikeNotification(CommentLikeNotificationCreateDto dto);
+    Task CreatePostNotificationForAllFollowers(PostNotificationCreateDto dto);
 }

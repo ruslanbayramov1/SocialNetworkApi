@@ -1,19 +1,50 @@
-﻿namespace Zust.BL.Helpers;
+﻿using Zust.BL.Constants;
+using Zust.BL.DTOs.Notifications;
+using Zust.Core.Enums;
+using Zust.Core.MongoEntities;
+
+namespace Zust.BL.Helpers;
 
 public class NotificationHelper
 {
-    public static string GetPostLikeNotificationMessage(string senderUserName)
+    public static string GenerateNotificationMessage(string senderUserName, NotificationTypes? type ,NotificationActions action)
     {
-        return $"{senderUserName} liked your post.";
+        string message = action switch
+        {
+            NotificationActions.Comment => $"{senderUserName} commented on your",
+            NotificationActions.Like => $"{senderUserName} liked your",
+            NotificationActions.Reply => $"{senderUserName} replied to your",
+            _ => $"{senderUserName} sended new"
+        };
+
+        string fullMessage = message + " " + (type != null ? type!.ToString().ToLower() : "request");
+
+        return fullMessage;
     }
 
-    public static string GetCommentLikeNotificationMessage(string senderUserName)
+    public static string GenerateRelatedLink(string baseUrl, NotificationTypes? type)
     {
-        return $"{senderUserName} liked your comment.";
+        string message = type switch
+        {
+            NotificationTypes.Comment => $"{baseUrl}/{EndpointConstant.CommentGet}",
+            NotificationTypes.Post => $"{baseUrl}/{EndpointConstant.PostGet}",
+            NotificationTypes.Story => $"{baseUrl}/{EndpointConstant.StoryGet}",
+            _ => baseUrl
+        };
+
+        return message;
     }
 
-    public static string GetCommentReplyNotificationMessage(string senderUserName)
+    public static List<NotificationGetDto> GenerateNotifications(string baseUrl, List<Notification> notifications)
     {
-        return $"{senderUserName} replied to your comment";
+        var notificationData = notifications.Select(x => new NotificationGetDto
+        {
+            CreatedAt = x.CreatedAt,
+            RelatedLink = $"{NotificationHelper.GenerateRelatedLink(baseUrl, x.Type)}/{x.RelatedEntityId}",
+            UserProfileLink = $"{baseUrl}/{EndpointConstant.UserProfileGet}/{x.SenderId}",
+            Message = NotificationHelper.GenerateNotificationMessage(x.SenderName, x.Type, x.Action),
+        }).ToList();
+
+        return notificationData;
     }
 }
