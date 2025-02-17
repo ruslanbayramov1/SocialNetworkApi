@@ -14,4 +14,6 @@ public interface IUserService
     Task UpdateProfile(UserProfileUpdateDto dto);
     Task UpdateProfileImage(IFormFile image);
     Task UpdateProfileBanner(IFormFile banner);
+    Task<bool> IsPrivate(Guid userId);
+    Task<bool> IsFriend(Guid currentUserId, Guid ownerUserId);
 }

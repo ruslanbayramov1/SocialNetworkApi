@@ -23,7 +23,8 @@ public class UserService : IUserService
     private readonly ILanguageRepository _languageRepo;
     private readonly IUserClaimService _userClaimService;
     private readonly IAzureCloudBlobService _azureCloudBlobService;
-    public UserService(IUserRepository userRepo, IUserClaimService userClaimService, IGenderRepository genderRepository, IOccupationRepository occupationRepository, IRelationStatusRepository relationStatusRepository, IBloodGroupRepository bloodGroupRepository, ILanguageRepository languageRepository, IAzureCloudBlobService azureCloudBlobService)
+    private readonly IFollowRepository _followRepo;
+    public UserService(IUserRepository userRepo, IUserClaimService userClaimService, IGenderRepository genderRepository, IOccupationRepository occupationRepository, IRelationStatusRepository relationStatusRepository, IBloodGroupRepository bloodGroupRepository, ILanguageRepository languageRepository, IAzureCloudBlobService azureCloudBlobService, IFollowRepository followRepo)
     {
         _userRepo = userRepo;
         _userClaimService = userClaimService;
@@ -33,6 +34,7 @@ public class UserService : IUserService
         _bloodGroupRepo = bloodGroupRepository;
         _languageRepo = languageRepository;
         _azureCloudBlobService = azureCloudBlobService;
+        _followRepo = followRepo;
     }
 
     public async Task<UserProfileGetDto> GetUserProfileById(Guid id)
@@ -187,5 +189,21 @@ public class UserService : IUserService
 
         user.CoverImageUrl = await _azureCloudBlobService.UploadImageAsync(banner, AzureFolderDestinations.Banners);
         await _userRepo.SaveAsync();
+    }
+
+    public async Task<bool> IsPrivate(Guid userId)
+    {
+        var user = await _userRepo.GetByIdAsync(userId);
+        if (user == null) throw new NotFoundException<User>();
+
+        return user.IsPrivate;
+    }
+
+    public async Task<bool> IsFriend(Guid currentUserId, Guid ownerUserId)
+    {
+        var follow = await _followRepo.GetByExpressionAsync(x => x.FollowerId == currentUserId && x.FollowingId == ownerUserId);
+        bool res = follow == null;
+
+        return res;
     }
 }
