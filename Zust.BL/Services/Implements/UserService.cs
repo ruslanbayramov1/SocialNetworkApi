@@ -1,6 +1,11 @@
-﻿using Zust.BL.DTOs.Users;
+﻿using Microsoft.AspNetCore.Http;
+using Zust.BL.Constants;
+using Zust.BL.DTOs.Users;
+using Zust.BL.Enums;
 using Zust.BL.Exceptions.Common;
+using Zust.BL.Exceptions.Files;
 using Zust.BL.ExternalServices.Interfaces;
+using Zust.BL.Helpers;
 using Zust.BL.Services.Interfaces;
 using Zust.Core.Entities;
 using Zust.Core.Enums;
@@ -17,7 +22,8 @@ public class UserService : IUserService
     private readonly IBloodGroupRepository _bloodGroupRepo;
     private readonly ILanguageRepository _languageRepo;
     private readonly IUserClaimService _userClaimService;
-    public UserService(IUserRepository userRepo, IUserClaimService userClaimService, IGenderRepository genderRepository, IOccupationRepository occupationRepository, IRelationStatusRepository relationStatusRepository, IBloodGroupRepository bloodGroupRepository, ILanguageRepository languageRepository)
+    private readonly IAzureCloudBlobService _azureCloudBlobService;
+    public UserService(IUserRepository userRepo, IUserClaimService userClaimService, IGenderRepository genderRepository, IOccupationRepository occupationRepository, IRelationStatusRepository relationStatusRepository, IBloodGroupRepository bloodGroupRepository, ILanguageRepository languageRepository, IAzureCloudBlobService azureCloudBlobService)
     {
         _userRepo = userRepo;
         _userClaimService = userClaimService;
@@ -26,6 +32,7 @@ public class UserService : IUserService
         _relStatusRepo = relationStatusRepository;
         _bloodGroupRepo = bloodGroupRepository;
         _languageRepo = languageRepository;
+        _azureCloudBlobService = azureCloudBlobService;
     }
 
     public async Task<UserProfileGetDto> GetUserProfileById(Guid id)
@@ -143,6 +150,42 @@ public class UserService : IUserService
         user.LanguageId = dto.LanguageId;
         user.Website = dto.Website;
 
+        await _userRepo.SaveAsync();
+    }
+
+    public async Task UpdateProfileImage(IFormFile image)
+    {
+        var user = await _userRepo.GetByIdAsync(_userClaimService.GetId());
+        if (user == null) throw new NotFoundException<User>();
+
+        if (!image.IsValidSize())
+        {
+            throw new InvalidFileSizeException($"The image size is invalid. Maximum allowed size is {FileConstant.ImageSize / 1024} mb");
+        }
+        if (!image.IsValidType())
+        {
+            throw new InvalidFileTypeException($"The image type is invalid. Allowed ones are any types of images.");
+        }
+
+        user.ProfileImageUrl = await _azureCloudBlobService.UploadImageAsync(image, AzureFolderDestinations.Profiles);
+        await _userRepo.SaveAsync();
+    }
+
+    public async Task UpdateProfileBanner(IFormFile banner)
+    {
+        var user = await _userRepo.GetByIdAsync(_userClaimService.GetId());
+        if (user == null) throw new NotFoundException<User>();
+
+        if (!banner.IsValidSize())
+        {
+            throw new InvalidFileSizeException($"The image size is invalid. Maximum allowed size is {FileConstant.ImageSize / 1024} mb");
+        }
+        if (!banner.IsValidType())
+        {
+            throw new InvalidFileTypeException($"The image type is invalid. Allowed ones are any types of images.");
+        }
+
+        user.CoverImageUrl = await _azureCloudBlobService.UploadImageAsync(banner, AzureFolderDestinations.Banners);
         await _userRepo.SaveAsync();
     }
 }

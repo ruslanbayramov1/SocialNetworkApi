@@ -43,10 +43,26 @@ public class UsersController : ControllerBase
     }
 
     [HttpPost]
-    [Route("[action]")]
+    [Route("Update/Account")]
     public async Task<IActionResult> UpdateAccount(UserProfileUpdateDto dto)
     { 
         await _userService.UpdateProfile(dto);
+        return Created();
+    }
+
+    [HttpPost]
+    [Route("Update/ProfileImage")]
+    public async Task<IActionResult> UpdateProfileImage(IFormFile image)
+    {
+        await _userService.UpdateProfileImage(image);
+        return Created();
+    }
+
+    [HttpPost]
+    [Route("Update/ProfileBanner")]
+    public async Task<IActionResult> UpdateProfileBanner(IFormFile banner)
+    {
+        await _userService.UpdateProfileBanner(banner);
         return Created();
     }
 

@@ -4,5 +4,6 @@ public enum AzureFolderDestinations
 {
     Posts,
     Albums,
-    Profiles
+    Profiles,
+    Banners
 }
