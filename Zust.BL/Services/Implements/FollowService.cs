@@ -46,9 +46,12 @@ public class FollowService : IFollowService
         await _followRepo.SaveAsync();
     }
 
-    public async Task<List<FollowGetDto>> GetAllFollowersAsync()
+    public async Task<List<FollowGetDto>> GetAllFollowersAsync(Guid userId)
     {
-        var data = await _followRepo.GetWhereAsync(x => x.FollowingId == _userClaimService.GetId(),x => new FollowGetDto
+        bool res = await _userRepo.IsExistsAsync(userId);
+        if (!res) throw new NotFoundException<User>();
+
+        var data = await _followRepo.GetWhereAsync(x => x.FollowingId == userId,x => new FollowGetDto
         { 
             User = new UserProfileGetDto
             { 
@@ -68,9 +71,12 @@ public class FollowService : IFollowService
         return data;
     }
 
-    public async Task<List<FollowGetDto>> GetAllFollowingsAsync()
+    public async Task<List<FollowGetDto>> GetAllFollowingsAsync(Guid userId)
     {
-        var data = await _followRepo.GetWhereAsync(x => x.FollowerId == _userClaimService.GetId(), x => new FollowGetDto
+        bool res = await _userRepo.IsExistsAsync(userId);
+        if (!res) throw new NotFoundException<User>();
+
+        var data = await _followRepo.GetWhereAsync(x => x.FollowerId == userId, x => new FollowGetDto
         {
             User = new UserProfileGetDto
             {

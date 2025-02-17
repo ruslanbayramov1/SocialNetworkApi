@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Zust.BL.Attributes;
 using Zust.BL.DTOs.Follows;
 using Zust.BL.Services.Interfaces;
 
@@ -6,6 +7,7 @@ namespace Zust.API.Controllers;
 
 [Route("/api/[controller]")]
 [ApiController]
+[Auth]
 public class FollowsController : ControllerBase
 {
     private readonly IFollowService _followService;
@@ -15,18 +17,18 @@ public class FollowsController : ControllerBase
     }
 
     [HttpGet]
-    [Route("[action]")]
-    public async Task<IActionResult> Followers()
+    [Route("[action]/{userId:guid}")]
+    public async Task<IActionResult> Followers(Guid userId)
     {
-        var data = await _followService.GetAllFollowersAsync();
+        var data = await _followService.GetAllFollowersAsync(userId);
         return Ok(data);
     }
 
     [HttpGet]
-    [Route("[action]")]
-    public async Task<IActionResult> Followings()
+    [Route("[action]/{userId:guid}")]
+    public async Task<IActionResult> Followings(Guid userId)
     {
-        var data = await _followService.GetAllFollowingsAsync();
+        var data = await _followService.GetAllFollowingsAsync(userId);
         return Ok(data);
     }
 
