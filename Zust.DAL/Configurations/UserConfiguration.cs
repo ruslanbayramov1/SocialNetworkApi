@@ -96,5 +96,9 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         builder
             .Property(x => x.IsEmailConfirmed)
             .HasDefaultValue(false);
+
+        builder
+            .Property(x => x.IsPrivate)
+            .HasDefaultValue(false);
     }
 }

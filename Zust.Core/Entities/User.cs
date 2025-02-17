@@ -28,6 +28,7 @@ public class User : BaseEntity
     public string? ProfileImageUrl { get; set; } = "https://finalprojectolympus.blob.core.windows.net/images/defaultuserimage.jpg";
     public string? CoverImageUrl { get; set; } = "https://finalprojectolympus.blob.core.windows.net/images/defaultusercover.jpg";
     public bool IsEmailConfirmed { get; set; }
+    public bool IsPrivate { get; set; }
 
     /// <summary>
     /// The collection of posts created by the user.

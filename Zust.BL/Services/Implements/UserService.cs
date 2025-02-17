@@ -1,5 +1,6 @@
 ﻿using Zust.BL.DTOs.Users;
 using Zust.BL.Exceptions.Common;
+using Zust.BL.ExternalServices.Interfaces;
 using Zust.BL.Services.Interfaces;
 using Zust.Core.Entities;
 using Zust.Core.Enums;
@@ -10,9 +11,21 @@ namespace Zust.BL.Services.Implements;
 public class UserService : IUserService
 {
     private readonly IUserRepository _userRepo;
-    public UserService(IUserRepository userRepo)
+    private readonly IGenderRepository _genderRepo;
+    private readonly IOccupationRepository _occupationRepo;
+    private readonly IRelationStatusRepository _relStatusRepo;
+    private readonly IBloodGroupRepository _bloodGroupRepo;
+    private readonly ILanguageRepository _languageRepo;
+    private readonly IUserClaimService _userClaimService;
+    public UserService(IUserRepository userRepo, IUserClaimService userClaimService, IGenderRepository genderRepository, IOccupationRepository occupationRepository, IRelationStatusRepository relationStatusRepository, IBloodGroupRepository bloodGroupRepository, ILanguageRepository languageRepository)
     {
         _userRepo = userRepo;
+        _userClaimService = userClaimService;
+        _genderRepo = genderRepository;
+        _occupationRepo = occupationRepository;
+        _relStatusRepo = relationStatusRepository;
+        _bloodGroupRepo = bloodGroupRepository;
+        _languageRepo = languageRepository;
     }
 
     public async Task<UserProfileGetDto> GetUserProfileById(Guid id)
@@ -36,8 +49,100 @@ public class UserService : IUserService
         return userProfile;
     }
 
-    public Task UpdateProfile()
+    public async Task<List<UserProfileGetDto>> GetUserProfileByName(string userName)
     {
-        throw new NotImplementedException();
+        bool res = await _userRepo.IsExistsAsync(x => x.UserName.Contains(userName));
+        if (!res) throw new NotFoundException<User>();
+
+        List<UserProfileGetDto>? userProfile = await _userRepo.GetWhereAsync(x => x.UserName.Contains(userName), x => new UserProfileGetDto
+        {
+            FirstName = x.FirstName,
+            LastName = x.LastName,
+            Email = x.Email,
+            CoverImageUrl = x.CoverImageUrl!,
+            ProfileImageUrl = x.ProfileImageUrl!,
+            Role = ((Roles)x.Role).ToString(),
+            UserName = x.UserName,
+            FollowerCount = x.Followers.Count(),
+            FollowingCount = x.Followings.Count(),
+            LikeCount = x.Posts.SelectMany(x => x.Likes).Count()
+        });
+
+        return userProfile;
+    }
+
+    public async Task<UserAccountGetDto> GetUserAccountByName(string userName)
+    {
+        bool res = await _userRepo.IsExistsAsync(x => x.UserName == userName);
+        if (!res) throw new NotFoundException<User>();
+
+        UserAccountGetDto? userProfile = await _userRepo.GetByExpressionAsync(x => x.UserName == userName, x => new UserAccountGetDto
+        {
+            FirstName = x.FirstName,
+            LastName = x.LastName,
+            Email = x.Email,
+            CoverImageUrl = x.CoverImageUrl!,
+            ProfileImageUrl = x.ProfileImageUrl!,
+            Role = ((Roles)x.Role).ToString(),
+            UserName = x.UserName,
+            FollowerCount = x.Followers.Count(),
+            FollowingCount = x.Followings.Count(),
+            LikeCount = x.Posts.SelectMany(x => x.Likes).Count(),
+            BloodGroup = x.BloodGroup.Name,
+            DateOfBirth = x.DateOfBirth,
+            Gender = x.Gender.Name,
+            Language = x.Language.Name,
+            Occupation = x.Occupation.Name,
+            RelationStatus = x.RelationStatus.Name,
+            Website = x.Website,
+            IsPrivate = x.IsPrivate
+        });
+
+        return userProfile;
+    }
+
+    public async Task UpdateProfile(UserProfileUpdateDto dto)
+    {
+        var user = await _userRepo.GetByIdAsync(_userClaimService.GetId());
+        if (user == null) throw new NotFoundException<User>();
+
+        if (dto.OccupationId.HasValue)
+        {
+            if (!await _occupationRepo.IsExistsAsync(dto.OccupationId.Value))
+                throw new NotFoundException<Occupation>();
+        }
+        if (dto.GenderId.HasValue)
+        {
+            if (!await _genderRepo.IsExistsAsync(dto.GenderId.Value))
+                throw new NotFoundException<Gender>();
+        }
+        if (dto.BloodGroupId.HasValue)
+        {
+            if (!await _bloodGroupRepo.IsExistsAsync(dto.BloodGroupId.Value))
+                throw new NotFoundException("Blood group");
+        }
+        if (dto.LanguageId.HasValue)
+        {
+            if (!await _languageRepo.IsExistsAsync(dto.LanguageId.Value))
+                throw new NotFoundException<Language>();
+        }
+        if (dto.RelationStatusId.HasValue)
+        {
+            if (!await _relStatusRepo.IsExistsAsync(dto.RelationStatusId.Value))
+                throw new NotFoundException("Relation status");
+        }
+
+        user.Address = dto.Address;
+        user.GenderId = dto.GenderId;
+        user.DateOfBirth = dto.DateOfBirth;
+        user.IsPrivate = dto.IsPrivate;
+        user.BackupEmail = dto.BackupEmail;
+        user.OccupationId = dto.OccupationId;
+        user.RelationStatusId = dto.RelationStatusId;
+        user.BloodGroupId = dto.BloodGroupId;
+        user.LanguageId = dto.LanguageId;
+        user.Website = dto.Website;
+
+        await _userRepo.SaveAsync();
     }
 }

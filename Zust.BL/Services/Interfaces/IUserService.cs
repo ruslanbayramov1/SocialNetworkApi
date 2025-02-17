@@ -8,5 +8,7 @@ public interface IUserService
     /// Gets general profile stats about user
     /// </summary>
     Task<UserProfileGetDto> GetUserProfileById(Guid id);
-    Task UpdateProfile();
+    Task<List<UserProfileGetDto>> GetUserProfileByName(string userName);
+    Task<UserAccountGetDto> GetUserAccountByName(string userName);
+    Task UpdateProfile(UserProfileUpdateDto dto);
 }
