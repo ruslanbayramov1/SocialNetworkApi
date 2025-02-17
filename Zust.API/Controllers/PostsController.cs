@@ -26,9 +26,16 @@ public class PostsController : ControllerBase
     }
 
     [HttpGet]
+    [Route("[action]/{userId:guid}")]
+    public async Task<IActionResult> User(Guid userId)
+    {
+        var data = await _postService.GetUserPostsAsync(userId);
+        return Ok(data);
+    }
+
+    [HttpGet]
     [Route("[action]/{postId:guid}")]
-    [NoAuth]
-    public async Task<IActionResult> GetById(Guid postId)
+    public async Task<IActionResult> Post(Guid postId)
     {
         return Ok(await _postService.GetPostByIdAsync(postId));
     }
@@ -43,7 +50,6 @@ public class PostsController : ControllerBase
 
     [HttpGet]
     [Route("[action]/{postId:guid}")]
-    [NoAuth]
     public async Task<IActionResult> Comments(Guid postId)
     {
         var data = await _postCommentService.GetCommentsAsync(postId);
@@ -60,7 +66,6 @@ public class PostsController : ControllerBase
 
     [HttpPost]
     [Route("[action]")]
-    [NoAuth]
     public async Task<IActionResult> Comment(PostCommentCreateDto dto)
     {
         await _postCommentService.CreateCommentAsync(dto);
@@ -69,7 +74,6 @@ public class PostsController : ControllerBase
 
     [HttpGet]
     [Route("[action]/{commentId:guid}")]
-    [NoAuth]
     public async Task<IActionResult> Replies(Guid commentId)
     {
         var data = await _postCommentService.GetRepliesAsync(commentId);
@@ -103,7 +107,7 @@ public class PostsController : ControllerBase
     }
 
     [HttpGet]
-    [Route("[action]/{commentId:guid}")]
+    [Route("Comment/Likes/{commentId:guid}")]
     public async Task<IActionResult> CommentLikes(Guid commentId)
     {
         var data = await _commentLikeService.GetCommentLikes(commentId);

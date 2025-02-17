@@ -22,26 +22,53 @@ public class PostService : IPostService
     private readonly IUserRepository _userRepo;
     private readonly IAzureCloudBlobService _azureCloudBlobService;
     private readonly IUserService _userService;
-    private readonly IPostCommentLikeRepository _postCommentLikeRepository;
     private readonly INotificationService _notificationService;
-    public PostService(IPostRepository postRepository, IUserClaimService userClaimService, IUserRepository userRepo, IAzureCloudBlobService azureCloudBlobService, IUserService userService, IPostCommentLikeRepository postCommentLikeRepository, INotificationService notificationService)
+    public PostService(IPostRepository postRepository, IUserClaimService userClaimService, IUserRepository userRepo, IAzureCloudBlobService azureCloudBlobService, IUserService userService, INotificationService notificationService)
     {
         _postRepository = postRepository;
         _userClaimService = userClaimService;
         _userRepo = userRepo;
         _azureCloudBlobService = azureCloudBlobService;
         _userService = userService;
-        _postCommentLikeRepository = postCommentLikeRepository;
         _notificationService = notificationService;
     }
 
-    public async Task<List<PostGetDto>> GetUserPostAsync(Guid userId)
+    public async Task<List<PostGetDto>> GetUserPostsAsync(Guid userId)
     {
         var user = await _userRepo.IsExistsAsync(userId);
         if (!user)
             throw new NotFoundException<User>();
 
-        List<PostGetDto> posts = new();
+        UserProfileGetDto userDto = await _userService.GetUserProfileById(userId);
+
+        List<PostGetDto>? posts = await _postRepository.GetWhereAsync(x => x.PostedUserId == userId, x => new PostGetDto
+        {
+            Id = x.Id,
+            Content = x.Content,
+            ImageUrl = x.ImageUrl,
+            LikeCount = x.Likes.Count(),
+            PostedUser = userDto,
+            Comments = x.Comments
+            .Where(y => y.ParentCommentId == null)
+            .Select(y => new PostCommentGetDto
+            {
+                Id = y.Id,
+                PostId = y.PostId,
+                Content = y.Content,
+                ParentCommentId = y.ParentCommentId,
+                LikeCount = y.Likes.Count(),
+                ReplyCount = y.Replies.Count(),
+                CommentedUser = new UserCommentGetDto
+                {
+                    Id = y.CommentedUser.Id,
+                    FirstName = y.CommentedUser.FirstName,
+                    LastName = y.CommentedUser.LastName,
+                    CoverImageUrl = y.CommentedUser.CoverImageUrl,
+                    ProfileImageUrl = y.CommentedUser.ProfileImageUrl,
+                    UserName = y.CommentedUser.UserName,
+                },
+            }).ToList(),
+        });
 
         return posts;
     }
@@ -65,23 +92,25 @@ public class PostService : IPostService
             LikeCount = x.Likes.Count(),
             PostedUser = userDto,
             Comments = x.Comments
-        .Where(y => y.ParentCommentId == null)
-        .Select(y => new PostCommentGetDto
-        {
-            Id = y.Id,
-            PostId = y.PostId,
-            Content = y.Content,
-            ParentCommentId = y.ParentCommentId,
-            CommentedUser = new UserCommentGetDto
+            .Where(y => y.ParentCommentId == null)
+            .Select(y => new PostCommentGetDto
             {
-                Id = y.CommentedUser.Id,
-                FirstName = y.CommentedUser.FirstName,
-                LastName = y.CommentedUser.LastName,
-                CoverImageUrl = y.CommentedUser.CoverImageUrl,
-                ProfileImageUrl = y.CommentedUser.ProfileImageUrl,
-                UserName = y.CommentedUser.UserName,
-            },
-        }).ToList(),
+                Id = y.Id,
+                PostId = y.PostId,
+                Content = y.Content,
+                ParentCommentId = y.ParentCommentId,
+                LikeCount = y.Likes.Count(),
+                ReplyCount = y.Replies.Count(),
+                CommentedUser = new UserCommentGetDto
+                {
+                    Id = y.CommentedUser.Id,
+                    FirstName = y.CommentedUser.FirstName,
+                    LastName = y.CommentedUser.LastName,
+                    CoverImageUrl = y.CommentedUser.CoverImageUrl,
+                    ProfileImageUrl = y.CommentedUser.ProfileImageUrl,
+                    UserName = y.CommentedUser.UserName,
+                },
+            }).ToList(),
         });
 
         return post;
