@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Zust.BL.Attributes;
 using Zust.BL.DTOs.Users;
+using Zust.BL.ExternalServices.Interfaces;
 using Zust.BL.Services.Interfaces;
 
 namespace Zust.API.Controllers;
@@ -12,10 +13,12 @@ public class UsersController : ControllerBase
 {
     private readonly IUserService _userService;
     private readonly INotificationService _notificationService;
-    public UsersController(IUserService userService, INotificationService notificationService)
+    private readonly IUserClaimService _userClaimService;
+    public UsersController(IUserService userService, INotificationService notificationService, IUserClaimService userClaimService)
     {
         _userService = userService;
         _notificationService = notificationService;
+        _userClaimService = userClaimService;
     }
 
     [HttpGet]
@@ -38,6 +41,19 @@ public class UsersController : ControllerBase
     [Route("[action]/{userName}")]
     public async Task<IActionResult> Account(string userName)
     {
+        var curUserName = _userClaimService.GetUserName();
+        bool isSelf = curUserName == userName;
+
+        if (!isSelf)
+        { 
+            var isPrivate = await _userService.IsPrivate(userName);
+            if (isPrivate)
+            { 
+                var isFriend = await _userService.IsFriend(userName);
+                if (!isFriend) throw new Exception("Bu camaatin priveyt hesabidi, agilli ol!");
+            }
+        }
+
         var user = await _userService.GetUserAccountByName(userName);
         return Ok(user);
     }

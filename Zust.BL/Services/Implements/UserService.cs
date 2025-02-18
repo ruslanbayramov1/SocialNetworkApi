@@ -191,19 +191,46 @@ public class UserService : IUserService
         await _userRepo.SaveAsync();
     }
 
-    public async Task<bool> IsPrivate(Guid userId)
+    public async Task<bool> IsPrivate(Guid ownerUserId)
+    {
+        var user = await GetById(ownerUserId);
+        return user.IsPrivate;
+    }
+
+    public async Task<bool> IsFriend(Guid ownerUserId)
+    {
+        var follow = await _followRepo.GetByExpressionAsync(x => x.FollowerId == _userClaimService.GetId() && x.FollowingId == ownerUserId);
+        bool res = follow != null;
+
+        return res;
+    }
+
+    public async Task<bool> IsPrivate(string ownerUserName)
+    {
+        var user = await GetByName(ownerUserName);
+        return user.IsPrivate;
+    }
+
+    public async Task<bool> IsFriend(string ownerUserName)
+    {
+        var user = await GetByName(ownerUserName);
+        var res = await IsFriend(user.Id);
+        return res;
+    }
+
+    public async Task<User> GetById(Guid userId)
     {
         var user = await _userRepo.GetByIdAsync(userId);
         if (user == null) throw new NotFoundException<User>();
 
-        return user.IsPrivate;
+        return user;
     }
 
-    public async Task<bool> IsFriend(Guid currentUserId, Guid ownerUserId)
+    public async Task<User> GetByName(string userName)
     {
-        var follow = await _followRepo.GetByExpressionAsync(x => x.FollowerId == currentUserId && x.FollowingId == ownerUserId);
-        bool res = follow == null;
+        var user = await _userRepo.GetByExpressionAsync(x => x.UserName == userName);
+        if (user == null) throw new NotFoundException<User>();
 
-        return res;
+        return user;
     }
 }
