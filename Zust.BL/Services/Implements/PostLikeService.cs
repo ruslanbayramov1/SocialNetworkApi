@@ -3,6 +3,7 @@ using Zust.BL.DTOs.PostLikes;
 using Zust.BL.DTOs.Users;
 using Zust.BL.Exceptions.Common;
 using Zust.BL.ExternalServices.Interfaces;
+using Zust.BL.Responses.Posts;
 using Zust.BL.Services.Interfaces;
 using Zust.Core.Entities;
 using Zust.Core.Interfaces.Repositories;
@@ -15,14 +16,12 @@ public class PostLikeService : IPostLikeService
     private readonly IPostLikeRepository _postLikeRepo;
     private readonly IUserRepository _userRepo;
     private readonly IUserClaimService _userClaimService;
-    private readonly INotificationService _notificationService;
-    public PostLikeService(IPostService postService, IPostLikeRepository postLikeRepository, IUserRepository userRepository, IUserClaimService userClaimService, INotificationService notificationService)
+    public PostLikeService(IPostService postService, IPostLikeRepository postLikeRepository, IUserRepository userRepository, IUserClaimService userClaimService)
     {
         _postService = postService;
         _postLikeRepo = postLikeRepository;
         _userRepo = userRepository;
         _userClaimService = userClaimService;
-        _notificationService = notificationService;
     }
 
     public async Task<List<PostLikeGetDto>> GetPostLikes(Guid postId)
@@ -45,7 +44,7 @@ public class PostLikeService : IPostLikeService
         return postLikes;
     }
 
-    public async Task CreatePostLikeAsync(PostLikeCreateDto dto)
+    public async Task<PostLikeCreateResponse> CreatePostLikeAsync(PostLikeCreateDto dto)
     {
         var post = await _postService.GetPostModelByIdAsync(dto.PostId);
 
@@ -61,14 +60,18 @@ public class PostLikeService : IPostLikeService
         await _postLikeRepo.AddAsync(postLike);
         await _postLikeRepo.SaveAsync();
 
-        // if a like is creating and liked user is not posted users himself, then store notification in MongoDB
-        await _notificationService.CratePostLikeNotification(new PostLikeNotificationCreateDto 
-        { 
-            PostedUserId = post.PostedUserId, 
-            PostId = post.Id, 
-            SenderUserId = user.Id,
-            SenderUserName = user.UserName,
-        });
+        var res = new PostLikeCreateResponse
+        {
+            NotificationData = new PostLikeNotificationCreateDto
+            {
+                PostedUserId = post.PostedUserId,
+                PostId = post.Id,
+                SenderUserId = user.Id,
+                SenderUserName = user.UserName,
+            }
+        };
+
+        return res;
     }
 
     public async Task DeleteAsync(Guid id)

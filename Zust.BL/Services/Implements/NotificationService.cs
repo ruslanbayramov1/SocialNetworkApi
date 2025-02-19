@@ -115,6 +115,9 @@ public class NotificationService : INotificationService
 
     public async Task CreatePostNotificationForAllFollowers(PostNotificationCreateDto dto)
     {
+        if (dto.FollowerCount == 0)
+            return;
+
         var notifications = await _followRepo.GetWhereAsync(x => x.FollowingId == _userClaimService.GetId(), x => new Notification
         {
             ReceiverId = x.FollowerId,

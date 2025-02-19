@@ -1,11 +1,14 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.Design;
 using Zust.BL.Attributes;
 using Zust.BL.DTOs.PostCommentLikes;
 using Zust.BL.DTOs.PostComments;
 using Zust.BL.DTOs.PostLikes;
 using Zust.BL.DTOs.Posts;
 using Zust.BL.ExternalServices.Interfaces;
+using Zust.BL.Responses.Posts;
 using Zust.BL.Services.Interfaces;
+using Zust.Core.Entities;
 
 namespace Zust.API.Controllers;
 
@@ -21,7 +24,8 @@ public class PostsController : ControllerBase
     private readonly IUserClaimService _userClaimService;
     private readonly IUserService _userService;
     private readonly IAccountCheckerService _accountCheckerService;
-    public PostsController(IPostService postService, IPostLikeService postLikeService, ICommentLikeService commentLikeService, IPostCommentService postCommentService, IUserClaimService userClaimService, IUserService userService, IAccountCheckerService accountCheckerService)
+    private readonly INotificationService _notificationService;
+    public PostsController(IPostService postService, IPostLikeService postLikeService, ICommentLikeService commentLikeService, IPostCommentService postCommentService, IUserClaimService userClaimService, IUserService userService, IAccountCheckerService accountCheckerService, INotificationService notificationService)
     {
         _postService = postService;
         _postLikeService = postLikeService;
@@ -30,6 +34,7 @@ public class PostsController : ControllerBase
         _userClaimService = userClaimService;
         _userService = userService;
         _accountCheckerService = accountCheckerService;
+        _notificationService = notificationService;
     }
 
     [HttpGet]
@@ -51,14 +56,17 @@ public class PostsController : ControllerBase
         Guid ownerId = await _accountCheckerService.GetPostOwnerIdAsync(postId);
         await _accountCheckerService.HasPermission(ownerId);
 
-        return Ok(await _postService.GetPostByIdAsync(postId));
+        var res = await _postService.GetPostByIdAsync(postId);
+        return Ok(res);
     }
 
     [HttpPost]
     [Route("[action]")]
     public async Task<IActionResult> Post([FromForm] PostCreateDto dto)
     {
-        await _postService.CreatePostAsync(dto);
+        PostCreateResponse res = await _postService.CreatePostAsync(dto);
+        await _notificationService.CreatePostNotificationForAllFollowers(res.NotificationData);
+
         return Created();
     }
 
@@ -90,7 +98,13 @@ public class PostsController : ControllerBase
     [Route("[action]")]
     public async Task<IActionResult> Comment(PostCommentCreateDto dto)
     {
-        await _postCommentService.CreateCommentAsync(dto);
+        // checking if current user have permission to make comment at owner's post
+        Guid ownerId = await _accountCheckerService.GetPostOwnerIdAsync(dto.PostId);
+        await _accountCheckerService.HasPermission(ownerId);
+
+        CommentCreateResponse res = await _postCommentService.CreateCommentAsync(dto);
+        await _notificationService.CreateCommentNotification(res.NotificationData);
+
         return Created();
     }
 
@@ -122,6 +136,10 @@ public class PostsController : ControllerBase
     [Route("[action]")]
     public async Task<IActionResult> Like(PostLikeCreateDto dto)
     {
+        // checking if current user have permission to make like at the owner's post
+        Guid ownerId = await _accountCheckerService.GetPostOwnerIdAsync(dto.PostId);
+        await _accountCheckerService.HasPermission(ownerId);
+
         Guid? id = await _postLikeService.IsLikedBefore(dto);
 
         if (id.HasValue)
@@ -131,7 +149,8 @@ public class PostsController : ControllerBase
         }
         else
         {
-            await _postLikeService.CreatePostLikeAsync(dto);
+            PostLikeCreateResponse res = await _postLikeService.CreatePostLikeAsync(dto);
+            await _notificationService.CratePostLikeNotification(res.NotificationData);
         }
         return Created();
     }
@@ -140,6 +159,10 @@ public class PostsController : ControllerBase
     [Route("Comment/Likes/{commentId:guid}")]
     public async Task<IActionResult> CommentLikes(Guid commentId)
     {
+        // checking if current user have permission to see the likes on comment at owner's post
+        Guid ownerId = await _accountCheckerService.GetPostOwnerIdOnCommentAsync(commentId);
+        await _accountCheckerService.HasPermission(ownerId);
+
         var data = await _commentLikeService.GetCommentLikes(commentId);
         return Ok(data);
     }
@@ -148,6 +171,10 @@ public class PostsController : ControllerBase
     [Route("[action]")]
     public async Task<IActionResult> CommentLike(PostCommentLikeCreateDto dto)
     {
+        // checking if current user have permission to make like on comment at owner's post
+        Guid ownerId = await _accountCheckerService.GetPostOwnerIdOnCommentAsync(dto.CommentId);
+        await _accountCheckerService.HasPermission(ownerId);
+
         Guid? id = await _commentLikeService.IsLikedBefore(dto);
 
         if (id.HasValue)
@@ -157,7 +184,8 @@ public class PostsController : ControllerBase
         }
         else
         {
-            await _commentLikeService.CreateCommentLikeAsync(dto);
+            CommentLikeCreateResponse res = await _commentLikeService.CreateCommentLikeAsync(dto);
+            await _notificationService.CrateCommentLikeNotification(res.NotificationData);
         }
         return Created();
     }

@@ -3,6 +3,7 @@ using Zust.BL.DTOs.PostComments;
 using Zust.BL.DTOs.Users;
 using Zust.BL.Exceptions.Common;
 using Zust.BL.ExternalServices.Interfaces;
+using Zust.BL.Responses.Posts;
 using Zust.BL.Services.Interfaces;
 using Zust.Core.Entities;
 using Zust.Core.Interfaces.Repositories;
@@ -16,18 +17,16 @@ public class PostCommentService : IPostCommentService
     private readonly IPostCommentRepository _postCommentRepo;
     private readonly IPostService _postService;
     private readonly IUserRepository _userRepo;
-    private readonly INotificationService _notificationService;
-    public PostCommentService(IPostRepository postRepository, IUserClaimService userClaimService, IPostCommentRepository postCommentRepo, IUserService userService, IPostService postService, IUserRepository userRepo, INotificationService notificationService)
+    public PostCommentService(IPostRepository postRepository, IUserClaimService userClaimService, IPostCommentRepository postCommentRepo, IUserService userService, IPostService postService, IUserRepository userRepo)
     {
         _postRepo = postRepository;
         _userClaimService = userClaimService;
         _postCommentRepo = postCommentRepo;
         _postService = postService;
         _userRepo = userRepo;
-        _notificationService = notificationService;
     }
 
-    public async Task CreateCommentAsync(PostCommentCreateDto dto)
+    public async Task<CommentCreateResponse> CreateCommentAsync(PostCommentCreateDto dto)
     {
         var post = await _postService.GetPostModelByIdAsync(dto.PostId);
         if (post == null) throw new NotFoundException<Post>();
@@ -53,16 +52,20 @@ public class PostCommentService : IPostCommentService
         await _postCommentRepo.AddAsync(comment);
         await _postCommentRepo.SaveAsync();
 
-        // notification in MongoDB
-        await _notificationService.CreateCommentNotification(new CommentNotificationCreateDto
-        { 
-            SenderUserId = user.Id,
-            SenderUserName = user.UserName,
-            PostedUserId = post.PostedUserId,
-            CommentedUserId = parentComment.CommentedUserId,
-            CommentId = comment.Id,
-            ParentCommentId = comment.ParentCommentId,
-        });
+        var res = new CommentCreateResponse
+        {
+            NotificationData = new CommentNotificationCreateDto
+            {
+                SenderUserId = user.Id,
+                SenderUserName = user.UserName,
+                PostedUserId = post.PostedUserId,
+                CommentedUserId = parentComment.CommentedUserId,
+                CommentId = comment.Id,
+                ParentCommentId = comment.ParentCommentId,
+            }
+        };
+
+        return res;
     }
 
     public async Task<PostCommentGetDto> GetCommentAsync(Guid commentId)

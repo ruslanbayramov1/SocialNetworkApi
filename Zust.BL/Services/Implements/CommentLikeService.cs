@@ -3,6 +3,7 @@ using Zust.BL.DTOs.PostCommentLikes;
 using Zust.BL.DTOs.Users;
 using Zust.BL.Exceptions.Common;
 using Zust.BL.ExternalServices.Interfaces;
+using Zust.BL.Responses.Posts;
 using Zust.BL.Services.Interfaces;
 using Zust.Core.Entities;
 using Zust.Core.Interfaces.Repositories;
@@ -25,7 +26,7 @@ public class CommentLikeService : ICommentLikeService
         _notificationService = notificationService;
     }
 
-    public async Task CreateCommentLikeAsync(PostCommentLikeCreateDto dto)
+    public async Task<CommentLikeCreateResponse> CreateCommentLikeAsync(PostCommentLikeCreateDto dto)
     {
         var user = await _userRepo.GetByIdAsync(_userClaimService.GetId());
         if (user == null) throw new NotFoundException<User>();
@@ -42,14 +43,18 @@ public class CommentLikeService : ICommentLikeService
         await _postCommentLikeRepo.AddAsync(commentLike);
         await _postCommentLikeRepo.SaveAsync();
 
-        // notification on comment like
-        await _notificationService.CrateCommentLikeNotification(new CommentLikeNotificationCreateDto
-        { 
-            SenderUserId = user.Id,
-            SenderUserName = user.UserName,
-            CommentId = postComment.Id,
-            CommentedUserId = postComment.CommentedUserId
-        });
+        var res = new CommentLikeCreateResponse
+        {
+            NotificationData = new CommentLikeNotificationCreateDto
+            {
+                SenderUserId = user.Id,
+                SenderUserName = user.UserName,
+                CommentId = postComment.Id,
+                CommentedUserId = postComment.CommentedUserId
+            }
+        };
+
+        return res;
     }
 
     public async Task<List<PostCommentLikeGetDto>> GetCommentLikes(Guid commentId)

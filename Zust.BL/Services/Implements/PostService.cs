@@ -8,6 +8,7 @@ using Zust.BL.Exceptions.Common;
 using Zust.BL.Exceptions.Files;
 using Zust.BL.ExternalServices.Interfaces;
 using Zust.BL.Helpers;
+using Zust.BL.Responses.Posts;
 using Zust.BL.Services.Interfaces;
 using Zust.Core.Entities;
 using Zust.Core.Interfaces.Repositories;
@@ -115,9 +116,15 @@ public class PostService : IPostService
         return post;
     }
 
-    public async Task CreatePostAsync(PostCreateDto dto)
+    public async Task<PostCreateResponse> CreatePostAsync(PostCreateDto dto)
     {
-        var user = await _userRepo.GetByIdAsync(_userClaimService.GetId());
+        var user = await _userRepo.GetByIdAsync(_userClaimService.GetId(), x => new User
+        { 
+            Id = x.Id,
+            Followers = x.Followers,
+            Followings = x.Followings,
+            UserName = x.UserName,
+        });
         if (user == null) throw new NotFoundException<User>();
 
         string? imageUrl = null;
@@ -143,8 +150,15 @@ public class PostService : IPostService
         await _postRepository.AddAsync(model);
         await _postRepository.SaveAsync();
 
-        if (user.Followers.Count() > 0)
-        await _notificationService.CreatePostNotificationForAllFollowers(new PostNotificationCreateDto { PostId = model.Id });
+        var response = new PostCreateResponse
+        {
+            NotificationData = new PostNotificationCreateDto
+            {
+                FollowerCount = user.Followers.Count(),
+                PostId = model.Id,
+            }
+        };
+        return response;
     }
 
     // helper
