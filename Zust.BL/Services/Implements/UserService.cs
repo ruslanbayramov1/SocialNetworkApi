@@ -23,8 +23,7 @@ public class UserService : IUserService
     private readonly ILanguageRepository _languageRepo;
     private readonly IUserClaimService _userClaimService;
     private readonly IAzureCloudBlobService _azureCloudBlobService;
-    private readonly IFollowRepository _followRepo;
-    public UserService(IUserRepository userRepo, IUserClaimService userClaimService, IGenderRepository genderRepository, IOccupationRepository occupationRepository, IRelationStatusRepository relationStatusRepository, IBloodGroupRepository bloodGroupRepository, ILanguageRepository languageRepository, IAzureCloudBlobService azureCloudBlobService, IFollowRepository followRepo)
+    public UserService(IUserRepository userRepo, IUserClaimService userClaimService, IGenderRepository genderRepository, IOccupationRepository occupationRepository, IRelationStatusRepository relationStatusRepository, IBloodGroupRepository bloodGroupRepository, ILanguageRepository languageRepository, IAzureCloudBlobService azureCloudBlobService)
     {
         _userRepo = userRepo;
         _userClaimService = userClaimService;
@@ -34,7 +33,6 @@ public class UserService : IUserService
         _bloodGroupRepo = bloodGroupRepository;
         _languageRepo = languageRepository;
         _azureCloudBlobService = azureCloudBlobService;
-        _followRepo = followRepo;
     }
 
     public async Task<UserProfileGetDto> GetUserProfileById(Guid id)
@@ -189,33 +187,6 @@ public class UserService : IUserService
 
         user.CoverImageUrl = await _azureCloudBlobService.UploadImageAsync(banner, AzureFolderDestinations.Banners);
         await _userRepo.SaveAsync();
-    }
-
-    public async Task<bool> IsPrivate(Guid ownerUserId)
-    {
-        var user = await GetById(ownerUserId);
-        return user.IsPrivate;
-    }
-
-    public async Task<bool> IsFriend(Guid ownerUserId)
-    {
-        var follow = await _followRepo.GetByExpressionAsync(x => x.FollowerId == _userClaimService.GetId() && x.FollowingId == ownerUserId);
-        bool res = follow != null;
-
-        return res;
-    }
-
-    public async Task<bool> IsPrivate(string ownerUserName)
-    {
-        var user = await GetByName(ownerUserName);
-        return user.IsPrivate;
-    }
-
-    public async Task<bool> IsFriend(string ownerUserName)
-    {
-        var user = await GetByName(ownerUserName);
-        var res = await IsFriend(user.Id);
-        return res;
     }
 
     public async Task<User> GetById(Guid userId)

@@ -14,11 +14,13 @@ public class UsersController : ControllerBase
     private readonly IUserService _userService;
     private readonly INotificationService _notificationService;
     private readonly IUserClaimService _userClaimService;
-    public UsersController(IUserService userService, INotificationService notificationService, IUserClaimService userClaimService)
+    private readonly IAccountCheckerService _accountCheckerService;
+    public UsersController(IUserService userService, INotificationService notificationService, IUserClaimService userClaimService, IAccountCheckerService accountCheckerService)
     {
         _userService = userService;
         _notificationService = notificationService;
         _userClaimService = userClaimService;
+        _accountCheckerService = accountCheckerService;
     }
 
     [HttpGet]
@@ -43,13 +45,12 @@ public class UsersController : ControllerBase
     {
         var curUserName = _userClaimService.GetUserName();
         bool isSelf = curUserName == userName;
-
         if (!isSelf)
         { 
-            var isPrivate = await _userService.IsPrivate(userName);
+            var isPrivate = await _accountCheckerService.IsPrivate(userName);
             if (isPrivate)
             { 
-                var isFriend = await _userService.IsFriend(userName);
+                var isFriend = await _accountCheckerService.IsFriend(userName);
                 if (!isFriend) throw new Exception("Bu camaatin priveyt hesabidi, agilli ol!");
             }
         }

@@ -1,6 +1,5 @@
 ﻿using Zust.BL.Constants;
 using Zust.BL.DTOs.Notifications;
-using Zust.BL.DTOs.PostCommentLikes;
 using Zust.BL.DTOs.PostComments;
 using Zust.BL.DTOs.Posts;
 using Zust.BL.DTOs.Users;
@@ -144,6 +143,7 @@ public class PostService : IPostService
         await _postRepository.AddAsync(model);
         await _postRepository.SaveAsync();
 
+        if (user.Followers.Count() > 0)
         await _notificationService.CreatePostNotificationForAllFollowers(new PostNotificationCreateDto { PostId = model.Id });
     }
 

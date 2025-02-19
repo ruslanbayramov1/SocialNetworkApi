@@ -38,6 +38,7 @@ public static class ServiceRegistration
         services.AddScoped<IMongoDbService, MongoDbService>();
         services.AddScoped<INotificationService, NotificationService>();
         services.AddScoped<IFollowService, FollowService>();
+        services.AddScoped<IAccountCheckerService, AccountCheckerService>();
 
         // external services
         services.AddScoped<IUserClaimService, UserClaimService>();
