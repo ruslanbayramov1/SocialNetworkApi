@@ -43,17 +43,8 @@ public class UsersController : ControllerBase
     [Route("[action]/{userName}")]
     public async Task<IActionResult> Account(string userName)
     {
-        var curUserName = _userClaimService.GetUserName();
-        bool isSelf = curUserName == userName;
-        if (!isSelf)
-        { 
-            var isPrivate = await _accountCheckerService.IsPrivate(userName);
-            if (isPrivate)
-            { 
-                var isFriend = await _accountCheckerService.IsFriend(userName);
-                if (!isFriend) throw new Exception("Bu camaatin priveyt hesabidi, agilli ol!");
-            }
-        }
+        // checking if current user have permission to see account of owner's
+        await _accountCheckerService.HasPermission(userName);
 
         var user = await _userService.GetUserAccountByName(userName);
         return Ok(user);

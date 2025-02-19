@@ -1,5 +1,6 @@
 ﻿using Zust.BL.ExternalServices.Interfaces;
 using Zust.BL.Services.Interfaces;
+using Zust.Core.Entities;
 using Zust.Core.Interfaces.Repositories;
 
 namespace Zust.BL.Services.Implements;
@@ -19,6 +20,37 @@ public class AccountCheckerService : IAccountCheckerService
         _userService = userService;
         _followRepo = followRepository;
         _userClaimService = userClaimService;
+    }
+
+    public async Task HasPermission(Guid ownerUserId)
+    {
+        var curUserId = _userClaimService.GetId();
+        bool isSelf = curUserId == ownerUserId;
+
+        if (!isSelf)
+        {
+            var isPrivate = await IsPrivate(ownerUserId);
+            if (isPrivate)
+            {
+                var isFriend = await IsFriend(ownerUserId);
+                if (!isFriend) throw new Exception("Bu camaatin priveyt hesabidi, agilli ol!");
+            }
+        }
+    }
+
+    public async Task HasPermission(string ownerUserName)
+    {
+        var curUserName = _userClaimService.GetUserName();
+        bool isSelf = curUserName == ownerUserName;
+        if (!isSelf)
+        {
+            var isPrivate = await IsPrivate(ownerUserName);
+            if (isPrivate)
+            {
+                var isFriend = await IsFriend(ownerUserName);
+                if (!isFriend) throw new Exception("Bu camaatin priveyt hesabidi, agilli ol!");
+            }
+        }
     }
 
     public async Task<bool> IsPrivate(Guid ownerUserId)

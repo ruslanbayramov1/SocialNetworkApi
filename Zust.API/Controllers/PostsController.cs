@@ -36,18 +36,8 @@ public class PostsController : ControllerBase
     [Route("[action]/{userId:guid}")]
     public async Task<IActionResult> User(Guid userId)
     {
-        var curUserId = _userClaimService.GetId();
-        bool isSelf = curUserId == userId;
-
-        if (!isSelf)
-        {
-            var isPrivate = await _accountCheckerService.IsPrivate(userId);
-            if (isPrivate)
-            {
-                var isFriend = await _accountCheckerService.IsFriend(userId);
-                if (!isFriend) throw new Exception("Bu camaatin priveyt hesabidi, agilli ol!");
-            }
-        }
+        // checking if current user have permission to see all posts of owner's
+        await _accountCheckerService.HasPermission(userId);
 
         var data = await _postService.GetUserPostsAsync(userId);
         return Ok(data);
@@ -57,19 +47,9 @@ public class PostsController : ControllerBase
     [Route("[action]/{postId:guid}")]
     public async Task<IActionResult> Post(Guid postId)
     {
+        // checking if current user have permission to see post of owner's
         Guid ownerId = await _accountCheckerService.GetPostOwnerIdAsync(postId);
-
-        var curUserId = _userClaimService.GetId();
-        bool isSelf = curUserId == ownerId;
-        if (!isSelf)
-        {
-            var isPrivate = await _accountCheckerService.IsPrivate(ownerId);
-            if (isPrivate)
-            {
-                var isFriend = await _accountCheckerService.IsFriend(ownerId);
-                if (!isFriend) throw new Exception("Bu camaatin priveyt hesabidi, agilli ol!");
-            }
-        }
+        await _accountCheckerService.HasPermission(ownerId);
 
         return Ok(await _postService.GetPostByIdAsync(postId));
     }
@@ -86,19 +66,9 @@ public class PostsController : ControllerBase
     [Route("[action]/{postId:guid}")]
     public async Task<IActionResult> Comments(Guid postId)
     {
+        // checking if current user have permission to see the comments at owner's post
         Guid ownerId = await _accountCheckerService.GetPostOwnerIdAsync(postId);
-
-        var curUserId = _userClaimService.GetId();
-        bool isSelf = curUserId == ownerId;
-        if (!isSelf)
-        {
-            var isPrivate = await _accountCheckerService.IsPrivate(ownerId);
-            if (isPrivate)
-            {
-                var isFriend = await _accountCheckerService.IsFriend(ownerId);
-                if (!isFriend) throw new Exception("Bu camaatin priveyt hesabidi, agilli ol!");
-            }
-        }
+        await _accountCheckerService.HasPermission(ownerId);
 
         var data = await _postCommentService.GetCommentsAsync(postId);
         return Ok(data);
@@ -108,19 +78,9 @@ public class PostsController : ControllerBase
     [Route("[action]/{commentId:guid}")]
     public async Task<IActionResult> Comment(Guid commentId)
     {
+        // checking if current user have permission to see comment at owner's post
         Guid ownerId = await _accountCheckerService.GetPostOwnerIdOnCommentAsync(commentId);
-
-        var curUserId = _userClaimService.GetId();
-        bool isSelf = curUserId == ownerId;
-        if (!isSelf)
-        {
-            var isPrivate = await _accountCheckerService.IsPrivate(ownerId);
-            if (isPrivate)
-            {
-                var isFriend = await _accountCheckerService.IsFriend(ownerId);
-                if (!isFriend) throw new Exception("Bu camaatin priveyt hesabidi, agilli ol!");
-            }
-        }
+        await _accountCheckerService.HasPermission(ownerId);
 
         var data =await _postCommentService.GetCommentAsync(commentId);
         return Ok(data);
@@ -138,19 +98,9 @@ public class PostsController : ControllerBase
     [Route("[action]/{commentId:guid}")]
     public async Task<IActionResult> Replies(Guid commentId)
     {
+        // checking if current user have permission to see the replies on comment at owner's post
         Guid ownerId = await _accountCheckerService.GetPostOwnerIdOnCommentAsync(commentId);
-
-        var curUserId = _userClaimService.GetId();
-        bool isSelf = curUserId == ownerId;
-        if (!isSelf)
-        {
-            var isPrivate = await _accountCheckerService.IsPrivate(ownerId);
-            if (isPrivate)
-            {
-                var isFriend = await _accountCheckerService.IsFriend(ownerId);
-                if (!isFriend) throw new Exception("Bu camaatin priveyt hesabidi, agilli ol!");
-            }
-        }
+        await _accountCheckerService.HasPermission(ownerId);
 
         var data = await _postCommentService.GetRepliesAsync(commentId);
         return Ok(data);
@@ -160,19 +110,9 @@ public class PostsController : ControllerBase
     [Route("[action]/{postId:guid}")]
     public async Task<IActionResult> Likes(Guid postId)
     {
+        // checking if current user have permission to see the likes at the owner's post
         Guid ownerId = await _accountCheckerService.GetPostOwnerIdAsync(postId);
-
-        var curUserId = _userClaimService.GetId();
-        bool isSelf = curUserId == ownerId;
-        if (!isSelf)
-        {
-            var isPrivate = await _accountCheckerService.IsPrivate(ownerId);
-            if (isPrivate)
-            {
-                var isFriend = await _accountCheckerService.IsFriend(ownerId);
-                if (!isFriend) throw new Exception("Bu camaatin priveyt hesabidi, agilli ol!");
-            }
-        }
+        await _accountCheckerService.HasPermission(ownerId);
 
         var data = await _postLikeService.GetPostLikes(postId);
         return Ok(data);
