@@ -58,8 +58,19 @@ public class FollowsController : ControllerBase
             }
             else
             {
-                await _notificationService.CreateFriendRequestNotification(new FriendRequestNotificationCreateDto { FollowingId = dto.FollowingId });
-                return StatusCode(StatusCodes.Status201Created, "Friend request sended.");
+                var notificationData = new FriendRequestNotificationCreateDto { FollowingId = dto.FollowingId };
+                Guid? notificationId = await _notificationService.IsFollowRequestExistsAsync(notificationData);
+
+                if (!notificationId.HasValue)
+                {
+                    await _notificationService.CreateFriendRequestNotification(notificationData);
+                    return StatusCode(StatusCodes.Status201Created, "Friend request sended.");
+                }
+                else
+                { 
+                    await _notificationService.DeleteNotificationAsync(notificationId.Value);
+                    return StatusCode(StatusCodes.Status204NoContent, "Friend request deleted.");
+                }
             }
         }
 

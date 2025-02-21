@@ -156,8 +156,25 @@ public class NotificationService : INotificationService
         await _notificationRepo.InsertToCollectionAsync(notification, MongoCollections.Notifications);
     }
 
-    //public Task DeleteNotifications<T>(List<FilterDefinition<T>> filters)
-    //{
+    public async Task<Guid?> IsFollowRequestExistsAsync(FriendRequestNotificationCreateDto dto)
+    {
 
-    //}
+        FilterDefinition<Notification> filters = Builders<Notification>.Filter.And(
+                Builders<Notification>.Filter.Eq(x => x.ReceiverId, dto.FollowingId),
+                Builders<Notification>.Filter.Eq(x => x.SenderId, _userClaimService.GetId()),
+                Builders<Notification>.Filter.Eq(x => x.Type, NotificationTypes.Friendship),
+                Builders<Notification>.Filter.Eq(x => x.Action, NotificationActions.Interaction)
+            );
+        var res = await _notificationRepo.GetOneWhere(filters, MongoCollections.Notifications);
+
+        if (res != null) return res.Id;
+
+        return null;
+    }
+
+    public async Task DeleteNotificationAsync(Guid notificationId)
+    {
+        FilterDefinition<Notification> filters = Builders<Notification>.Filter.Eq(x => x.Id, notificationId);
+        await _notificationRepo.DeleteOneAsync(filters, MongoCollections.Notifications);
+    }
 }

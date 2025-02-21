@@ -39,6 +39,15 @@ public class MongoDbRepository<T> : IMongoDbRepository<T> where T : BaseMongoEnt
         return dataList;
     }
 
+    public async Task<T> GetOneWhere(FilterDefinition<T> filter, MongoCollections collectionName)
+    {
+        var combinedFilter = Builders<T>.Filter.And(_getGlobalFilter(), filter);
+
+        var data = await _database.GetCollection<T>(collectionName.ToString()).FindAsync(combinedFilter);
+        var dataOne = await data.FirstOrDefaultAsync();
+        return dataOne;
+    }
+
     public async Task InsertManyToCollectionAsync(List<T> data, MongoCollections collectionName)
     {
         var collection = GetCollection(collectionName);
