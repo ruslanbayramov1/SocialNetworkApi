@@ -1,17 +1,20 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using Zust.Core.Enums;
+using Zust.Core.MongoEntities.Common;
 
 namespace Zust.Core.MongoEntities;
 
 /// <summary>
 /// All notification handling
 /// </summary>
-public class Notification
+public class Notification : BaseMongoEntity
 {
-    [BsonId]
-    [BsonRepresentation(BsonType.String)]
-    public Guid Id { get; set; } = Guid.NewGuid();
+    public Notification()
+    {
+        
+    }
+
     [BsonRepresentation(BsonType.String)]
     public Guid SenderId { get; set; }
     public string SenderName { get; set; } = null!;
@@ -25,5 +28,4 @@ public class Notification
     public NotificationTypes? Type { get; set; }
     [BsonRepresentation(BsonType.String)]
     public NotificationActions Action { get; set; }
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }

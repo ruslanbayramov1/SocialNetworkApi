@@ -5,6 +5,7 @@ using Microsoft.OpenApi.Models;
 using System.Text;
 using Zust.BL.Exceptions.Common;
 using Zust.BL.Options;
+using Zust.DAL.Options;
 
 namespace Zust.API;
 

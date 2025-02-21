@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Zust.BL.Attributes;
 using Zust.BL.DTOs.Follows;
+using Zust.BL.DTOs.Notifications;
 using Zust.BL.Services.Interfaces;
 
 namespace Zust.API.Controllers;
@@ -11,9 +12,13 @@ namespace Zust.API.Controllers;
 public class FollowsController : ControllerBase
 {
     private readonly IFollowService _followService;
-    public FollowsController(IFollowService followService)
+    private readonly IAccountCheckerService _accountCheckerService;
+    private readonly INotificationService _notificationService;
+    public FollowsController(IFollowService followService, IAccountCheckerService accountCheckerService, INotificationService notificationService)
     {
         _followService = followService;
+        _accountCheckerService = accountCheckerService;
+        _notificationService = notificationService;
     }
 
     [HttpGet]
@@ -45,8 +50,17 @@ public class FollowsController : ControllerBase
         }
         else
         {
-            var resp = await _followService.CreateAsync(dto);
-            res = resp;
+            bool isPrivate = await _accountCheckerService.IsPrivate(dto.FollowingId);
+            if (!isPrivate)
+            {
+                var resp = await _followService.CreateAsync(dto);
+                res = resp;
+            }
+            else
+            {
+                await _notificationService.CreateFriendRequestNotification(new FriendRequestNotificationCreateDto { FollowingId = dto.FollowingId });
+                return StatusCode(StatusCodes.Status201Created, "Friend request sended.");
+            }
         }
 
         return StatusCode(StatusCodes.Status201Created, res);

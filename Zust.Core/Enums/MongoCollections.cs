@@ -1,4 +1,4 @@
-﻿namespace Zust.BL.Enums;
+﻿namespace Zust.Core.Enums;
 
 public enum MongoCollections
 {

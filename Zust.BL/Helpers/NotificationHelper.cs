@@ -17,7 +17,14 @@ public class NotificationHelper
             _ => $"{senderUserName} sended new"
         };
 
-        string fullMessage = message + " " + (type != null ? type!.ToString().ToLower() : "request");
+        string fullMessage = type switch
+        {
+            NotificationTypes.Comment => $"{message} {type?.ToString().ToLower()}.",
+            NotificationTypes.Post => $"{message} {type?.ToString().ToLower()}.",
+            NotificationTypes.Story => $"{message} {type?.ToString().ToLower()}.",
+            NotificationTypes.Friendship => $"{message} {type?.ToString().ToLower()} request.",
+            _ => " request."
+        };
 
         return fullMessage;
     }
@@ -29,6 +36,7 @@ public class NotificationHelper
             NotificationTypes.Comment => $"{baseUrl}/{EndpointConstant.CommentGet}",
             NotificationTypes.Post => $"{baseUrl}/{EndpointConstant.PostGet}",
             NotificationTypes.Story => $"{baseUrl}/{EndpointConstant.StoryGet}",
+            NotificationTypes.Friendship => $"{baseUrl}/{EndpointConstant.UserProfileGet}",
             _ => baseUrl
         };
 
@@ -39,9 +47,10 @@ public class NotificationHelper
     {
         var notificationData = notifications.Select(x => new NotificationGetDto
         {
+            Id = x.Id,
             CreatedAt = x.CreatedAt,
             RelatedLink = $"{NotificationHelper.GenerateRelatedLink(baseUrl, x.Type)}/{x.RelatedEntityId}",
-            UserProfileLink = $"{baseUrl}/{EndpointConstant.UserProfileGet}/{x.SenderId}",
+            UserAccountLink = $"{baseUrl}/{EndpointConstant.UserAccountGet}/{x.SenderName}",
             Message = NotificationHelper.GenerateNotificationMessage(x.SenderName, x.Type, x.Action),
         }).ToList();
 

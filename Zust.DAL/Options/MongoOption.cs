@@ -1,4 +1,4 @@
-﻿namespace Zust.BL.Options;
+﻿namespace Zust.DAL.Options;
 
 public class MongoOption
 {

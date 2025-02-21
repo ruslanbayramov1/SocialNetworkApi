@@ -9,4 +9,6 @@ public interface INotificationService
     Task CreateCommentNotification(CommentNotificationCreateDto dto);
     Task CrateCommentLikeNotification(CommentLikeNotificationCreateDto dto);
     Task CreatePostNotificationForAllFollowers(PostNotificationCreateDto dto);
+    Task CreateFriendRequestNotification(FriendRequestNotificationCreateDto dto);
+    //Task DeleteNotifications<T>(List<FilterDefinition<T>> filters);
 }

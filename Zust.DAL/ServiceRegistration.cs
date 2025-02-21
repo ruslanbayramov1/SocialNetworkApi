@@ -1,8 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Zust.Core.Interfaces.MongoRepositories;
 using Zust.Core.Interfaces.Repositories;
 using Zust.DAL.Contexts;
+using Zust.DAL.MongoRepositories.Implements;
 using Zust.DAL.Repositories.Implements;
 
 namespace Zust.DAL;
@@ -22,6 +24,7 @@ public static class ServiceRegistration
         services.AddScoped<IPostLikeRepository, PostLikeRepository>();
         services.AddScoped<IPostCommentLikeRepository, PostCommentLikeRepository>();
         services.AddScoped<IFollowRepository, FollowRepository>();
+        services.AddScoped<INotificationRepository, NotificationRepository>();
 
         return services;
     }

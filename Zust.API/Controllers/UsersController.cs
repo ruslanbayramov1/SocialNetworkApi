@@ -43,9 +43,6 @@ public class UsersController : ControllerBase
     [Route("[action]/{userName}")]
     public async Task<IActionResult> Account(string userName)
     {
-        // checking if current user have permission to see account of owner's
-        await _accountCheckerService.HasPermission(userName);
-
         var user = await _userService.GetUserAccountByName(userName);
         return Ok(user);
     }

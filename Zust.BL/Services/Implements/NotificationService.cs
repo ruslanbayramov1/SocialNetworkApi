@@ -1,12 +1,12 @@
 ﻿using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using Zust.BL.DTOs.Notifications;
-using Zust.BL.Enums;
 using Zust.BL.ExternalServices.Interfaces;
 using Zust.BL.Helpers;
 using Zust.BL.Options;
 using Zust.BL.Services.Interfaces;
 using Zust.Core.Enums;
+using Zust.Core.Interfaces.MongoRepositories;
 using Zust.Core.Interfaces.Repositories;
 using Zust.Core.MongoEntities;
 
@@ -14,13 +14,13 @@ namespace Zust.BL.Services.Implements;
 
 public class NotificationService : INotificationService
 {
-    private readonly IMongoDbService _mongoDbService;
+    private readonly INotificationRepository _notificationRepo;
     private readonly IUserClaimService _userClaimService;
     private readonly IFollowRepository _followRepo;
     private readonly ApiOption _opt;
-    public NotificationService(IMongoDbService mongoDbService, IUserClaimService userClaimService, IFollowRepository followRepository, IOptions<ApiOption> opt)
+    public NotificationService(INotificationRepository notificationRepository, IUserClaimService userClaimService, IFollowRepository followRepository, IOptions<ApiOption> opt)
     {
-        _mongoDbService = mongoDbService;
+        _notificationRepo = notificationRepository;
         _userClaimService = userClaimService;
         _followRepo = followRepository;
         _opt = opt.Value;
@@ -40,7 +40,7 @@ public class NotificationService : INotificationService
             Type = NotificationTypes.Post,
             Action = NotificationActions.Like
         };
-        await _mongoDbService.InsertToCollectionAsync(notification, MongoCollections.Notifications);
+        await _notificationRepo.InsertToCollectionAsync(notification, MongoCollections.Notifications);
     }
 
     public async Task CreateCommentNotification(CommentNotificationCreateDto dto)
@@ -91,7 +91,7 @@ public class NotificationService : INotificationService
         }
 
         if (notifications.Count > 0)
-            await _mongoDbService.InsertManyToCollectionAsync(notifications, MongoCollections.Notifications);
+            await _notificationRepo.InsertManyToCollectionAsync(notifications, MongoCollections.Notifications);
     }
 
     public async Task CrateCommentLikeNotification(CommentLikeNotificationCreateDto dto)
@@ -110,7 +110,7 @@ public class NotificationService : INotificationService
             Type = NotificationTypes.Comment,
         };
 
-        await _mongoDbService.InsertToCollectionAsync(notification, MongoCollections.Notifications);
+        await _notificationRepo.InsertToCollectionAsync(notification, MongoCollections.Notifications);
     }
 
     public async Task CreatePostNotificationForAllFollowers(PostNotificationCreateDto dto)
@@ -128,16 +128,36 @@ public class NotificationService : INotificationService
             Action = NotificationActions.Interaction,
         });
 
-        await _mongoDbService.InsertManyToCollectionAsync(notifications, MongoCollections.Notifications);
+        await _notificationRepo.InsertManyToCollectionAsync(notifications, MongoCollections.Notifications);
     }
 
     public async Task<List<NotificationGetDto>> GetUserNotifications()
     {
         var filter = Builders<Notification>.Filter.Eq(x => x.ReceiverId, _userClaimService.GetId());
-        var notifications = await _mongoDbService.GetCollectionListWhere(filter, MongoCollections.Notifications);
+        var notifications = await _notificationRepo.GetCollectionListWhere(filter, MongoCollections.Notifications);
 
         var notificationData = NotificationHelper.GenerateNotifications(_opt.BaseUrl, notifications);
 
         return notificationData;
     }
+
+    public async Task CreateFriendRequestNotification(FriendRequestNotificationCreateDto dto)
+    {
+        var notification = new Notification
+        {
+            ReceiverId = dto.FollowingId,
+            SenderId = _userClaimService.GetId(),
+            Action = NotificationActions.Interaction,
+            Type = NotificationTypes.Friendship,
+            RelatedEntityId = _userClaimService.GetId().ToString(),
+            SenderName= _userClaimService.GetUserName(),
+        };
+
+        await _notificationRepo.InsertToCollectionAsync(notification, MongoCollections.Notifications);
+    }
+
+    //public Task DeleteNotifications<T>(List<FilterDefinition<T>> filters)
+    //{
+
+    //}
 }

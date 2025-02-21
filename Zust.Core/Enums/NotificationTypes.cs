@@ -5,4 +5,5 @@ public enum NotificationTypes
     Post,
     Comment,
     Story,
+    Friendship
 }
