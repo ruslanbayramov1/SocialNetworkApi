@@ -1,4 +1,5 @@
 using Zust.API;
+using Zust.API.Middlewares;
 using Zust.BL;
 using Zust.DAL;
 
@@ -11,6 +12,9 @@ builder.Services.AddSwaggerGen(builder.Configuration);
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddOptionPatterns(builder.Configuration);
 builder.Services.AddJwtAuthentication(builder.Configuration);
+
+// middleware
+builder.Services.AddTransient<PermissionMiddleware>();
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext(builder.Configuration);
@@ -33,6 +37,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// middleware
+app.UseMiddleware<PermissionMiddleware>();
 
 app.UseZustExceptionHandler();
 

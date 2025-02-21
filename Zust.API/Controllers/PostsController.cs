@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System.ComponentModel.Design;
 using Zust.BL.Attributes;
 using Zust.BL.DTOs.PostCommentLikes;
 using Zust.BL.DTOs.PostComments;
@@ -8,7 +7,6 @@ using Zust.BL.DTOs.Posts;
 using Zust.BL.ExternalServices.Interfaces;
 using Zust.BL.Responses.Posts;
 using Zust.BL.Services.Interfaces;
-using Zust.Core.Entities;
 
 namespace Zust.API.Controllers;
 
