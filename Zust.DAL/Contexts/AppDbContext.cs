@@ -46,4 +46,7 @@ public class AppDbContext : DbContext
     public DbSet<PostCommentLike> PostCommentLikes { get; set; }
     public DbSet<PostLike> PostLikes { get; set; }
     public DbSet<Follow> Follows { get; set; }
+    public DbSet<Story> Stories { get; set; }
+    public DbSet<StoryView> StoryViews { get; set; }
+    public DbSet<StoryLike> StoryLikes { get; set; }
 }

@@ -11,77 +11,79 @@ namespace Zust.DAL.MongoRepositories.Implements;
 public class MongoDbRepository<T> : IMongoDbRepository<T> where T : BaseMongoEntity, new()
 {
     private readonly IMongoDatabase _database;
-    public MongoDbRepository(IOptions<MongoOption> opt)
+    private readonly MongoCollections _collectionName;
+    public MongoDbRepository(IOptions<MongoOption> opt, MongoCollections collectionName)
     {
         var connectionString = opt.Value.Connection.Replace("<db_password>", opt.Value.Password);
         var client = new MongoClient(connectionString);
         _database = client.GetDatabase(MongoOption.DatabaseName);
 
         CreateNotificationIndexesAsync().Wait();
+        _collectionName = collectionName;
     }
 
-    public IMongoCollection<T> GetCollection(MongoCollections collectionName)
-        => _database.GetCollection<T>(collectionName.ToString());
+    public IMongoCollection<T> GetCollection()
+        => _database.GetCollection<T>(_collectionName.ToString());
 
-    public async Task<List<T>> GetCollectionList(MongoCollections collectionName)
+    public async Task<List<T>> GetCollectionList()
     {
-        var data = await _database.GetCollection<T>(collectionName.ToString()).FindAsync(_getGlobalFilter());
+        var data = await _database.GetCollection<T>(_collectionName.ToString()).FindAsync(_getGlobalFilter());
         var dataList = await data.ToListAsync();
         return dataList;
     }
 
-    public async Task<List<T>> GetCollectionListWhere(FilterDefinition<T> filter, MongoCollections collectionName)
+    public async Task<List<T>> GetCollectionListWhere(FilterDefinition<T> filter)
     {
         var combinedFilter = Builders<T>.Filter.And(_getGlobalFilter(), filter);
 
-        var data = await _database.GetCollection<T>(collectionName.ToString()).FindAsync(combinedFilter);
+        var data = await _database.GetCollection<T>(_collectionName.ToString()).FindAsync(combinedFilter);
         var dataList = await data.ToListAsync();
         return dataList;
     }
 
-    public async Task<T> GetOneWhere(FilterDefinition<T> filter, MongoCollections collectionName)
+    public async Task<T> GetOneWhere(FilterDefinition<T> filter)
     {
         var combinedFilter = Builders<T>.Filter.And(_getGlobalFilter(), filter);
 
-        var data = await _database.GetCollection<T>(collectionName.ToString()).FindAsync(combinedFilter);
+        var data = await _database.GetCollection<T>(_collectionName.ToString()).FindAsync(combinedFilter);
         var dataOne = await data.FirstOrDefaultAsync();
         return dataOne;
     }
 
-    public async Task InsertManyToCollectionAsync(List<T> data, MongoCollections collectionName)
+    public async Task InsertManyToCollectionAsync(List<T> data)
     {
-        var collection = GetCollection(collectionName);
+        var collection = GetCollection();
         await collection.InsertManyAsync(data);
     }
 
-    public async Task InsertToCollectionAsync(T data, MongoCollections collectionName)
+    public async Task InsertToCollectionAsync(T data)
     {
-        var collection = GetCollection(collectionName);
+        var collection = GetCollection();
         await collection.InsertOneAsync(data);
     }
 
-    public async Task UpdateOneAsync(FilterDefinition<T> filter, UpdateDefinition<T> data, MongoCollections collectionName)
+    public async Task UpdateOneAsync(FilterDefinition<T> filter, UpdateDefinition<T> data)
     {
-        var collection = GetCollection(collectionName);
+        var collection = GetCollection();
         var result = await collection.UpdateOneAsync(filter, data);
     }
 
-    public async Task DeleteOneAsync(FilterDefinition<T> filter, MongoCollections collectionName)
+    public async Task DeleteOneAsync(FilterDefinition<T> filter)
     {
-        var collection = GetCollection(collectionName);
+        var collection = GetCollection();
         await collection.DeleteOneAsync(filter);
     }
 
-    public async Task<bool> IsExistsAsync(FilterDefinition<T> filter, MongoCollections collectionName)
+    public async Task<bool> IsExistsAsync(FilterDefinition<T> filter)
     {
-        var collection = await GetCollectionListWhere(filter, collectionName);
+        var collection = await GetCollectionListWhere(filter);
         if (collection.Count == 0) return false;
         return true;
     }
 
-    public async Task<T> GetOneById(Guid id, MongoCollections collectionName)
+    public async Task<T> GetOneById(Guid id)
     {
-        var dataOne = await GetOneWhere(Builders<T>.Filter.Eq(x => x.Id, id), MongoCollections.Notifications);
+        var dataOne = await GetOneWhere(Builders<T>.Filter.Eq(x => x.Id, id));
         return dataOne;
     }
 
@@ -96,7 +98,7 @@ public class MongoDbRepository<T> : IMongoDbRepository<T> where T : BaseMongoEnt
     {
         if (typeof(T).Name.ToString().ToLower() is "notification")
         {
-            var notificationCollection = (IMongoCollection<Notification>)GetCollection(MongoCollections.Notifications);
+            var notificationCollection = (IMongoCollection<Notification>)GetCollection();
 
             var existingIndexes = await notificationCollection.Indexes.ListAsync();
             var indexNames = await existingIndexes.ToListAsync(); // listing index names

@@ -29,6 +29,7 @@ public class User : BaseEntity
     public string? CoverImageUrl { get; set; } = "https://finalprojectolympus.blob.core.windows.net/images/defaultusercover.jpg";
     public bool IsEmailConfirmed { get; set; }
     public bool IsPrivate { get; set; }
+    public bool IsBanned { get; set; }
 
     /// <summary>
     /// The collection of posts created by the user.
@@ -59,4 +60,19 @@ public class User : BaseEntity
     /// The collection of users who the user follows.
     /// </summary>
     public ICollection<Follow> Followings { get; set; } = new List<Follow>();
+
+    /// <summary>
+    /// The collection of posts created by user.
+    /// </summary>
+    public ICollection<Story> Stories { get; set; } = new List<Story>();
+
+    /// <summary>
+    /// The collection of likes made by user to various stories.
+    /// </summary>
+    public ICollection<StoryLike> StoryLikes { get; set; } = new List<StoryLike>();
+
+    /// <summary>
+    /// The collection of views made by user to various stories.
+    /// </summary>
+    public ICollection<StoryView> StoryViews { get; set; } = new List<StoryView>();
 }

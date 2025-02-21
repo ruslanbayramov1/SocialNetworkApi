@@ -40,7 +40,7 @@ public class NotificationService : INotificationService
             Type = NotificationTypes.Post,
             Action = NotificationActions.Like
         };
-        await _notificationRepo.InsertToCollectionAsync(notification, MongoCollections.Notifications);
+        await _notificationRepo.InsertToCollectionAsync(notification);
     }
 
     public async Task CreateCommentNotification(CommentNotificationCreateDto dto)
@@ -91,7 +91,7 @@ public class NotificationService : INotificationService
         }
 
         if (notifications.Count > 0)
-            await _notificationRepo.InsertManyToCollectionAsync(notifications, MongoCollections.Notifications);
+            await _notificationRepo.InsertManyToCollectionAsync(notifications);
     }
 
     public async Task CrateCommentLikeNotification(CommentLikeNotificationCreateDto dto)
@@ -110,7 +110,7 @@ public class NotificationService : INotificationService
             Type = NotificationTypes.Comment,
         };
 
-        await _notificationRepo.InsertToCollectionAsync(notification, MongoCollections.Notifications);
+        await _notificationRepo.InsertToCollectionAsync(notification);
     }
 
     public async Task CreatePostNotificationForAllFollowers(PostNotificationCreateDto dto)
@@ -128,13 +128,13 @@ public class NotificationService : INotificationService
             Action = NotificationActions.Interaction,
         });
 
-        await _notificationRepo.InsertManyToCollectionAsync(notifications, MongoCollections.Notifications);
+        await _notificationRepo.InsertManyToCollectionAsync(notifications);
     }
 
     public async Task<List<NotificationGetDto>> GetUserNotifications()
     {
         var filter = Builders<Notification>.Filter.Eq(x => x.ReceiverId, _userClaimService.GetId());
-        var notifications = await _notificationRepo.GetCollectionListWhere(filter, MongoCollections.Notifications);
+        var notifications = await _notificationRepo.GetCollectionListWhere(filter);
 
         var notificationData = NotificationHelper.GenerateNotifications(_opt.BaseUrl, notifications);
 
@@ -143,7 +143,7 @@ public class NotificationService : INotificationService
 
     public async Task<Notification> GetNotificationModelByIdAsync(Guid id)
     {
-        Notification notification = await _notificationRepo.GetOneById(id, MongoCollections.Notifications);
+        Notification notification = await _notificationRepo.GetOneById(id);
         return notification;
     }
 
@@ -159,7 +159,7 @@ public class NotificationService : INotificationService
             SenderName= _userClaimService.GetUserName(),
         };
 
-        await _notificationRepo.InsertToCollectionAsync(notification, MongoCollections.Notifications);
+        await _notificationRepo.InsertToCollectionAsync(notification);
     }
 
     public async Task<Guid?> IsFollowRequestExistsAsync(FriendRequestNotificationCreateDto dto)
@@ -171,7 +171,7 @@ public class NotificationService : INotificationService
                 Builders<Notification>.Filter.Eq(x => x.Type, NotificationTypes.Friendship),
                 Builders<Notification>.Filter.Eq(x => x.Action, NotificationActions.Interaction)
             );
-        var res = await _notificationRepo.GetOneWhere(filters, MongoCollections.Notifications);
+        var res = await _notificationRepo.GetOneWhere(filters);
 
         if (res != null)
         {
@@ -184,7 +184,7 @@ public class NotificationService : INotificationService
     public async Task DeleteNotificationAsync(Guid notificationId)
     {
         FilterDefinition<Notification> filters = Builders<Notification>.Filter.Eq(x => x.Id, notificationId);
-        await _notificationRepo.DeleteOneAsync(filters, MongoCollections.Notifications);
+        await _notificationRepo.DeleteOneAsync(filters);
     }
 
     public async Task UpdateNotificationHiddenInfo(Guid notificationId)
@@ -193,6 +193,6 @@ public class NotificationService : INotificationService
         FilterDefinition<Notification> filter = Builders<Notification>.Filter.Eq(x => x.Id, notificationId);
         UpdateDefinition<Notification> updateDefinition = Builders<Notification>.Update.Set(x => x.IsHidden, true);
 
-        await _notificationRepo.UpdateOneAsync(filter, updateDefinition, MongoCollections.Notifications);
+        await _notificationRepo.UpdateOneAsync(filter, updateDefinition);
     }
 }

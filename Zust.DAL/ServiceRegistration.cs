@@ -24,6 +24,11 @@ public static class ServiceRegistration
         services.AddScoped<IPostLikeRepository, PostLikeRepository>();
         services.AddScoped<IPostCommentLikeRepository, PostCommentLikeRepository>();
         services.AddScoped<IFollowRepository, FollowRepository>();
+        services.AddScoped<IStoryRepository, StoryRepository>();
+        services.AddScoped<IStoryLikeRepository, StoryLikeRepository>();
+        services.AddScoped<IStoryViewRepository, StoryViewRepository>();
+
+        // MongoDB repository
         services.AddScoped<INotificationRepository, NotificationRepository>();
 
         return services;
