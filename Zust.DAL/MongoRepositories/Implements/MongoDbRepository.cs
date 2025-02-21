@@ -25,14 +25,16 @@ public class MongoDbRepository<T> : IMongoDbRepository<T> where T : BaseMongoEnt
 
     public async Task<List<T>> GetCollectionList(MongoCollections collectionName)
     {
-        var data = await _database.GetCollection<T>(collectionName.ToString()).FindAsync(null);
+        var data = await _database.GetCollection<T>(collectionName.ToString()).FindAsync(_getGlobalFilter());
         var dataList = await data.ToListAsync();
         return dataList;
     }
 
     public async Task<List<T>> GetCollectionListWhere(FilterDefinition<T> filter, MongoCollections collectionName)
     {
-        var data = await _database.GetCollection<T>(collectionName.ToString()).FindAsync(filter);
+        var combinedFilter = Builders<T>.Filter.And(_getGlobalFilter(), filter);
+
+        var data = await _database.GetCollection<T>(collectionName.ToString()).FindAsync(combinedFilter);
         var dataList = await data.ToListAsync();
         return dataList;
     }
@@ -49,7 +51,7 @@ public class MongoDbRepository<T> : IMongoDbRepository<T> where T : BaseMongoEnt
         await collection.InsertOneAsync(data);
     }
 
-    public async Task DeleteManyAsync(FilterDefinition<T> filter, MongoCollections collectionName)
+    public async Task DeleteOneAsync(FilterDefinition<T> filter, MongoCollections collectionName)
     {
         var collection = GetCollection(collectionName);
         await collection.DeleteOneAsync(filter);
@@ -62,17 +64,16 @@ public class MongoDbRepository<T> : IMongoDbRepository<T> where T : BaseMongoEnt
         return true;
     }
 
-    private async Task<IMongoCollection<T>> _applyGlobalFilters(IMongoCollection<T> collection)
+    // global filter
+    private FilterDefinition<T> _getGlobalFilter()
     {
-        var filter = Builders<T>.Filter.Ne(x => x.IsHidden, true);
-        await collection.FindAsync(filter);
-        return collection;
+        return Builders<T>.Filter.Ne(x => x.IsHidden, true);
     }
 
     // index creator
     private async Task CreateNotificationIndexesAsync()
     {
-        if (typeof(T) is Notification)
+        if (typeof(T).Name.ToString().ToLower() is "notification")
         {
             var notificationCollection = (IMongoCollection<Notification>)GetCollection(MongoCollections.Notifications);
 
