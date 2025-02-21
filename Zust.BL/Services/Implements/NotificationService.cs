@@ -141,6 +141,12 @@ public class NotificationService : INotificationService
         return notificationData;
     }
 
+    public async Task<Notification> GetNotificationModelByIdAsync(Guid id)
+    {
+        Notification notification = await _notificationRepo.GetOneById(id, MongoCollections.Notifications);
+        return notification;
+    }
+
     public async Task CreateFriendRequestNotification(FriendRequestNotificationCreateDto dto)
     {
         var notification = new Notification
@@ -167,7 +173,10 @@ public class NotificationService : INotificationService
             );
         var res = await _notificationRepo.GetOneWhere(filters, MongoCollections.Notifications);
 
-        if (res != null) return res.Id;
+        if (res != null)
+        {
+            return res.Id;
+        }
 
         return null;
     }
@@ -176,5 +185,14 @@ public class NotificationService : INotificationService
     {
         FilterDefinition<Notification> filters = Builders<Notification>.Filter.Eq(x => x.Id, notificationId);
         await _notificationRepo.DeleteOneAsync(filters, MongoCollections.Notifications);
+    }
+
+    public async Task UpdateNotificationHiddenInfo(Guid notificationId)
+    {
+        var notification = await GetNotificationModelByIdAsync(notificationId);
+        FilterDefinition<Notification> filter = Builders<Notification>.Filter.Eq(x => x.Id, notificationId);
+        UpdateDefinition<Notification> updateDefinition = Builders<Notification>.Update.Set(x => x.IsHidden, true);
+
+        await _notificationRepo.UpdateOneAsync(filter, updateDefinition, MongoCollections.Notifications);
     }
 }

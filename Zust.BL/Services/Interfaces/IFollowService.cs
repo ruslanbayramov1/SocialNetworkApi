@@ -9,4 +9,5 @@ public interface IFollowService
     Task<string> CreateAsync(FollowCreateDto dto);
     Task DeleteAsync(Guid id);
     Task<Guid?> IsFollowedBefore(FollowCreateDto dto);
+    Task<string> ApproveAndCreate(Guid notificationId);
 }

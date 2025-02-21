@@ -25,6 +25,8 @@ public class FollowsController : ControllerBase
     [Route("[action]/{userId:guid}")]
     public async Task<IActionResult> Followers(Guid userId)
     {
+        await _accountCheckerService.HasPermission(userId);
+
         var data = await _followService.GetAllFollowersAsync(userId);
         return Ok(data);
     }
@@ -33,6 +35,8 @@ public class FollowsController : ControllerBase
     [Route("[action]/{userId:guid}")]
     public async Task<IActionResult> Followings(Guid userId)
     {
+        await _accountCheckerService.HasPermission(userId);
+
         var data = await _followService.GetAllFollowingsAsync(userId);
         return Ok(data);
     }
@@ -68,12 +72,27 @@ public class FollowsController : ControllerBase
                 }
                 else
                 { 
-                    await _notificationService.DeleteNotificationAsync(notificationId.Value);
-                    return StatusCode(StatusCodes.Status204NoContent, "Friend request deleted.");
+                    await _notificationService.UpdateNotificationHiddenInfo(notificationId.Value);
+                    return StatusCode(StatusCodes.Status204NoContent, "Friend request removed.");
                 }
             }
         }
 
         return StatusCode(StatusCodes.Status201Created, res);
+    }
+
+    [HttpPost]
+    [Route("[action]")]
+    public async Task<IActionResult> Respond(FollowRespondDto dto)
+    {
+        if (!dto.IsApproved)
+        {
+            await _notificationService.UpdateNotificationHiddenInfo(dto.NotificationId);
+            return NoContent();
+        }
+
+        var res = await _followService.ApproveAndCreate(dto.NotificationId);
+        await _notificationService.UpdateNotificationHiddenInfo(dto.NotificationId);
+        return StatusCode(StatusCodes.Status202Accepted, res);
     }
 }

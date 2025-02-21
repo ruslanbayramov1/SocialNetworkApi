@@ -6,6 +6,7 @@ using Zust.BL.Services.Interfaces;
 using Zust.Core.Entities;
 using Zust.Core.Enums;
 using Zust.Core.Interfaces.Repositories;
+using Zust.Core.MongoEntities;
 
 namespace Zust.BL.Services.Implements;
 
@@ -14,11 +15,31 @@ public class FollowService : IFollowService
     private readonly IFollowRepository _followRepo;
     private readonly IUserRepository _userRepo;
     private readonly IUserClaimService _userClaimService;
-    public FollowService(IFollowRepository followRepo, IUserRepository userRepo, IUserClaimService userClaimService)
+    private readonly INotificationService _notificationService;
+    public FollowService(IFollowRepository followRepo, IUserRepository userRepo, IUserClaimService userClaimService, INotificationService notificationService)
     {
         _followRepo = followRepo;
         _userRepo = userRepo;
         _userClaimService = userClaimService;
+        _notificationService = notificationService;
+    }
+
+    public async Task<string> ApproveAndCreate(Guid notificationId)
+    {
+        Notification notification = await _notificationService.GetNotificationModelByIdAsync(notificationId);
+
+        if (notification.ReceiverId != _userClaimService.GetId())
+            throw new Exception("Get oz notificationlariva bax ;)");
+
+        var follow = new Follow
+        {
+            FollowerId = notification.SenderId,
+            FollowingId = _userClaimService.GetId(),
+        };
+
+        await _followRepo.AddAsync(follow);
+        await _followRepo.SaveAsync();
+        return $"User {notification.SenderName}'s friendship request accepted.";
     }
 
     public async Task<string> CreateAsync(FollowCreateDto dto)
@@ -34,7 +55,7 @@ public class FollowService : IFollowService
 
         await _followRepo.AddAsync(follow);
         await _followRepo.SaveAsync();
-        return $"User {followingUser.UserName} followed";
+        return $"User {followingUser.UserName} followed.";
     }
 
     public async Task DeleteAsync(Guid id)

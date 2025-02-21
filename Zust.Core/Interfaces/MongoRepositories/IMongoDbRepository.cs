@@ -9,6 +9,8 @@ public interface IMongoDbRepository<T> where T : BaseMongoEntity, new()
     IMongoCollection<T> GetCollection(MongoCollections collectionName);
     Task<List<T>> GetCollectionList(MongoCollections collectionName);
     Task<List<T>> GetCollectionListWhere(FilterDefinition<T> filter, MongoCollections collectionName);
+    Task<T> GetOneById(Guid id, MongoCollections collectionName);
+    Task UpdateOneAsync(FilterDefinition<T> filter, UpdateDefinition<T> data, MongoCollections collectionName);
     Task<T> GetOneWhere(FilterDefinition<T> filter, MongoCollections collectionName);
     Task InsertToCollectionAsync(T data, MongoCollections collectionName);
     Task InsertManyToCollectionAsync(List<T> data, MongoCollections collectionName);

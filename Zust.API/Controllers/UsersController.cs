@@ -3,6 +3,7 @@ using Zust.BL.Attributes;
 using Zust.BL.DTOs.Users;
 using Zust.BL.ExternalServices.Interfaces;
 using Zust.BL.Services.Interfaces;
+using Zust.Core.Entities;
 
 namespace Zust.API.Controllers;
 

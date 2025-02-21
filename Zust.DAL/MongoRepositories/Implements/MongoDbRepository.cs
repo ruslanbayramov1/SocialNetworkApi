@@ -60,6 +60,12 @@ public class MongoDbRepository<T> : IMongoDbRepository<T> where T : BaseMongoEnt
         await collection.InsertOneAsync(data);
     }
 
+    public async Task UpdateOneAsync(FilterDefinition<T> filter, UpdateDefinition<T> data, MongoCollections collectionName)
+    {
+        var collection = GetCollection(collectionName);
+        var result = await collection.UpdateOneAsync(filter, data);
+    }
+
     public async Task DeleteOneAsync(FilterDefinition<T> filter, MongoCollections collectionName)
     {
         var collection = GetCollection(collectionName);
@@ -71,6 +77,12 @@ public class MongoDbRepository<T> : IMongoDbRepository<T> where T : BaseMongoEnt
         var collection = await GetCollectionListWhere(filter, collectionName);
         if (collection.Count == 0) return false;
         return true;
+    }
+
+    public async Task<T> GetOneById(Guid id, MongoCollections collectionName)
+    {
+        var dataOne = await GetOneWhere(Builders<T>.Filter.Eq(x => x.Id, id), MongoCollections.Notifications);
+        return dataOne;
     }
 
     // global filter
