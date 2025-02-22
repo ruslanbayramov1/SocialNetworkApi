@@ -9,4 +9,5 @@ public interface IPostCommentService
     Task<PostCommentGetDto> GetCommentAsync(Guid commentId);
     Task<List<PostCommentGetDto>> GetCommentsAsync(Guid postId);
     Task<List<PostCommentGetDto>> GetRepliesAsync(Guid commentId);
+    Task DeleteAsync(Guid commentId);
 }

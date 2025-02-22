@@ -68,6 +68,16 @@ public class PostCommentService : IPostCommentService
         return res;
     }
 
+    public async Task DeleteAsync(Guid commentId)
+    {
+        var res = await _postCommentRepo.GetByExpressionAsync(x => x.Id == commentId && x.CommentedUserId == _userClaimService.GetId());
+        if (res == null)
+            throw new NotFoundException("Comment");
+
+        await _postCommentRepo.RemoveAsync(commentId);
+        await _postCommentRepo.SaveAsync();
+    }
+
     public async Task<PostCommentGetDto> GetCommentAsync(Guid commentId)
     {
         bool isCommentExists = await _postCommentRepo.IsExistsAsync(commentId);

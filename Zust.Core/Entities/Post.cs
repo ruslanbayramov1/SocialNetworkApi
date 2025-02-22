@@ -22,9 +22,9 @@ public class Post : BaseEntity
     /// <summary>
     /// The collection of likes received on the post.
     /// </summary>
-    public ICollection<PostLike> Likes { get; set; } = new List<PostLike>();
+    public ICollection<PostLike>? Likes { get; set; } = new List<PostLike>();
     /// <summary>
     /// The collection of comments made on the post.
     /// </summary>
-    public ICollection<PostComment> Comments { get; set; } = new List<PostComment>();
+    public ICollection<PostComment>? Comments { get; set; } = new List<PostComment>();
 }

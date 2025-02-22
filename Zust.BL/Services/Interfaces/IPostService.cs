@@ -9,6 +9,7 @@ public interface IPostService
     Task<List<PostGetDto>> GetUserPostsAsync(Guid userId);
     Task<PostGetDto> GetPostByIdAsync(Guid postId);
     Task<PostCreateResponse> CreatePostAsync(PostCreateDto dto);
+    Task DeleteAsync(Guid postId);
 
     //helpers
     Task<Post> GetPostModelByIdAsync(Guid postId);

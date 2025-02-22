@@ -22,15 +22,13 @@ public class PostService : IPostService
     private readonly IUserRepository _userRepo;
     private readonly IAzureCloudBlobService _azureCloudBlobService;
     private readonly IUserService _userService;
-    private readonly INotificationService _notificationService;
-    public PostService(IPostRepository postRepository, IUserClaimService userClaimService, IUserRepository userRepo, IAzureCloudBlobService azureCloudBlobService, IUserService userService, INotificationService notificationService)
+    public PostService(IPostRepository postRepository, IUserClaimService userClaimService, IUserRepository userRepo, IAzureCloudBlobService azureCloudBlobService, IUserService userService)
     {
         _postRepository = postRepository;
         _userClaimService = userClaimService;
         _userRepo = userRepo;
         _azureCloudBlobService = azureCloudBlobService;
         _userService = userService;
-        _notificationService = notificationService;
     }
 
     public async Task<List<PostGetDto>> GetUserPostsAsync(Guid userId)
@@ -183,5 +181,28 @@ public class PostService : IPostService
             throw new NotFoundException<Post>();
 
         return post;
+    }
+
+    public async Task DeleteAsync(Guid postId)
+    {
+        var post = await _postRepository.GetByExpressionAsync(x => x.Id == postId && x.PostedUserId == _userClaimService.GetId(), x => new Post
+        { 
+            Comments = x.Comments,
+            Content = x.Content,
+            CreatedAt = x.CreatedAt,
+            Id = x.Id,
+            ImageUrl= x.ImageUrl,
+            DeletedAt= x.DeletedAt,
+            IsDeleted= x.IsDeleted,
+            Likes = x.Likes,
+            PostedUser = x.PostedUser,
+            PostedUserId= x.PostedUserId,
+            UpdatedAt = x.UpdatedAt
+        });
+        if (post == null)
+            throw new NotFoundException<Post>();
+
+        await _postRepository.RemoveAsync(postId);
+        await _postRepository.SaveAsync();
     }
 }
