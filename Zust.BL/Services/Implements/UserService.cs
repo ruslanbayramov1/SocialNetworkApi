@@ -158,14 +158,7 @@ public class UserService : IUserService
         var user = await _userRepo.GetByIdAsync(_userClaimService.GetId());
         if (user == null) throw new NotFoundException<User>();
 
-        if (!image.IsValidSize())
-        {
-            throw new InvalidFileSizeException($"The image size is invalid. Maximum allowed size is {FileConstant.ImageSize / 1024} mb");
-        }
-        if (!image.IsValidType())
-        {
-            throw new InvalidFileTypeException($"The image type is invalid. Allowed ones are any types of images.");
-        }
+        image.IsValidTypeAndSize();
 
         user.ProfileImageUrl = await _azureCloudBlobService.UploadImageAsync(image, AzureFolderDestinations.Profiles);
         await _userRepo.SaveAsync();
@@ -176,14 +169,7 @@ public class UserService : IUserService
         var user = await _userRepo.GetByIdAsync(_userClaimService.GetId());
         if (user == null) throw new NotFoundException<User>();
 
-        if (!banner.IsValidSize())
-        {
-            throw new InvalidFileSizeException($"The image size is invalid. Maximum allowed size is {FileConstant.ImageSize / 1024} mb");
-        }
-        if (!banner.IsValidType())
-        {
-            throw new InvalidFileTypeException($"The image type is invalid. Allowed ones are any types of images.");
-        }
+        banner.IsValidTypeAndSize();
 
         user.CoverImageUrl = await _azureCloudBlobService.UploadImageAsync(banner, AzureFolderDestinations.Banners);
         await _userRepo.SaveAsync();

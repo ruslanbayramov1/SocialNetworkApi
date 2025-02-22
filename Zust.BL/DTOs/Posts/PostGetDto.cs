@@ -8,7 +8,7 @@ public class PostGetDto
 {
     public Guid Id { get; set; }
     public string Content { get; set; } = null!;
-    public string? ImageUrl { get; set; }
+    public string? MediaUrl { get; set; }
 
     public UserProfileGetDto PostedUser { get; set; }
 

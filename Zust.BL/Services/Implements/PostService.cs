@@ -43,7 +43,7 @@ public class PostService : IPostService
         {
             Id = x.Id,
             Content = x.Content,
-            ImageUrl = x.ImageUrl,
+            MediaUrl = x.MediaUrl,
             LikeCount = x.Likes.Count(),
             PostedUser = userDto,
             Comments = x.Comments
@@ -86,7 +86,7 @@ public class PostService : IPostService
         {
             Id = x.Id,
             Content = x.Content,
-            ImageUrl = x.ImageUrl,
+            MediaUrl = x.MediaUrl,
             LikeCount = x.Likes.Count(),
             PostedUser = userDto,
             Comments = x.Comments
@@ -125,25 +125,18 @@ public class PostService : IPostService
         });
         if (user == null) throw new NotFoundException<User>();
 
-        string? imageUrl = null;
-        if (dto.Image != null)
+        string? mediaUrl = null;
+        if (dto.Media != null)
         {
-            if (!dto.Image.IsValidSize())
-            {
-                throw new InvalidFileSizeException($"The image size is invalid. Maximum allowed size is {FileConstant.ImageSize / 1024} mb");
-            }
-            else if (!dto.Image.IsValidType())
-            {
-                throw new InvalidFileTypeException($"The image type is invalid. Allowed ones are any types of images.");
-            }
-            imageUrl = await _azureCloudBlobService.UploadImageAsync(dto.Image, AzureFolderDestinations.Posts);
+            dto.Media.IsValidTypeAndSize();
+            mediaUrl = await _azureCloudBlobService.UploadImageAsync(dto.Media, AzureFolderDestinations.Posts);
         }
 
         var model = new Post
         {
             Content = dto.Content,
             PostedUserId = user.Id,
-            ImageUrl = imageUrl,
+            MediaUrl = mediaUrl,
         };
         await _postRepository.AddAsync(model);
         await _postRepository.SaveAsync();
@@ -169,7 +162,7 @@ public class PostService : IPostService
             Content = x.Content,
             CreatedAt = x.CreatedAt,
             DeletedAt = x.DeletedAt,
-            ImageUrl = x.ImageUrl,
+            MediaUrl = x.MediaUrl,
             IsDeleted = x.IsDeleted,
             Likes = x.Likes,
             PostedUser = x.PostedUser,
@@ -191,7 +184,7 @@ public class PostService : IPostService
             Content = x.Content,
             CreatedAt = x.CreatedAt,
             Id = x.Id,
-            ImageUrl= x.ImageUrl,
+            MediaUrl= x.MediaUrl,
             DeletedAt= x.DeletedAt,
             IsDeleted= x.IsDeleted,
             Likes = x.Likes,
@@ -202,9 +195,9 @@ public class PostService : IPostService
         if (post == null)
             throw new NotFoundException<Post>();
 
-        if (!String.IsNullOrEmpty(post.ImageUrl))
+        if (!String.IsNullOrEmpty(post.MediaUrl))
         { 
-            await _azureCloudBlobService.DeleteImageAsync(post.ImageUrl);
+            await _azureCloudBlobService.DeleteImageAsync(post.MediaUrl);
         }
         await _postRepository.RemoveAsync(postId);
         await _postRepository.SaveAsync();

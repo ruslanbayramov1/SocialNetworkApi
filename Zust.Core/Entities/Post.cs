@@ -8,7 +8,7 @@ namespace Zust.Core.Entities;
 public class Post : BaseEntity
 {
     public string Content { get; set; } = null!;
-    public string? ImageUrl { get; set; }
+    public string? MediaUrl { get; set; }
 
     /// <summary>
     /// The user who created the post.
