@@ -58,8 +58,8 @@ public class PostCommentService : IPostCommentService
             {
                 SenderUserId = user.Id,
                 SenderUserName = user.UserName,
-                PostedUserId = post.PostedUserId,
-                CommentedUserId = parentComment.CommentedUserId,
+                PostedUserId = post.PostedUserId.Value,
+                CommentedUserId = parentComment.CommentedUserId.HasValue ? parentComment.CommentedUserId.Value : null,
                 CommentId = comment.Id,
                 ParentCommentId = comment.ParentCommentId,
             }
@@ -86,7 +86,7 @@ public class PostCommentService : IPostCommentService
         var comment = await _postCommentRepo.GetByIdAsync(commentId, x => new PostCommentGetDto
         {
             Id = x.Id,
-            PostId = x.PostId,
+            PostId = x.PostId.Value,
             Content = x.Content,
             ParentCommentId = x.ParentCommentId,
             CommentedUser = new UserCommentGetDto
@@ -112,7 +112,7 @@ public class PostCommentService : IPostCommentService
         var comments = await _postCommentRepo.GetWhereAsync(x => x.PostId == postId && x.ParentCommentId == null, x => new PostCommentGetDto
         {
             Id = x.Id,
-            PostId = x.PostId,
+            PostId = x.PostId.Value,
             Content = x.Content,
             ParentCommentId = x.ParentCommentId,
             CommentedUser = new UserCommentGetDto
@@ -169,7 +169,7 @@ public class PostCommentService : IPostCommentService
         var replies = comment!.Replies.Select(x => new PostCommentGetDto
         {
             Id = x.Id,
-            PostId = x.PostId,
+            PostId = x.PostId.Value,
             Content = x.Content,
             ParentCommentId = x.ParentCommentId,
             CommentedUser = new UserCommentGetDto

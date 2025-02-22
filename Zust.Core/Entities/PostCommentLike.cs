@@ -10,18 +10,18 @@ public class PostCommentLike : BaseEntity
     /// <summary>
     /// The comment that is being liked.
     /// </summary>
-    public PostComment PostComment { get; set; }
+    public PostComment? PostComment { get; set; }
     /// <summary>
     /// The ID of the comment that is being liked.
     /// </summary>
-    public Guid PostCommentId { get; set; }
+    public Guid? PostCommentId { get; set; }
 
     /// <summary>
     /// The user who liked the comment.
     /// </summary>
-    public User LikedUser { get; set; }
+    public User? LikedUser { get; set; }
     /// <summary>
     /// The ID of the user who liked the comment.
     /// </summary>
-    public Guid LikedUserId { get; set; }
+    public Guid? LikedUserId { get; set; }
 }

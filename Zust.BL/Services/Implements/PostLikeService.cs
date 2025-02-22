@@ -64,7 +64,7 @@ public class PostLikeService : IPostLikeService
         {
             NotificationData = new PostLikeNotificationCreateDto
             {
-                PostedUserId = post.PostedUserId,
+                PostedUserId = post.PostedUserId.Value,
                 PostId = post.Id,
                 SenderUserId = user.Id,
                 SenderUserName = user.UserName,

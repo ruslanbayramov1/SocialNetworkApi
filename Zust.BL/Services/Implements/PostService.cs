@@ -51,7 +51,7 @@ public class PostService : IPostService
             .Select(y => new PostCommentGetDto
             {
                 Id = y.Id,
-                PostId = y.PostId,
+                PostId = y.PostId.Value,
                 Content = y.Content,
                 ParentCommentId = y.ParentCommentId,
                 LikeCount = y.Likes.Count(),
@@ -94,7 +94,7 @@ public class PostService : IPostService
             .Select(y => new PostCommentGetDto
             {
                 Id = y.Id,
-                PostId = y.PostId,
+                PostId = y.PostId.Value,
                 Content = y.Content,
                 ParentCommentId = y.ParentCommentId,
                 LikeCount = y.Likes.Count(),

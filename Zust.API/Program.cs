@@ -13,7 +13,7 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddOptionPatterns(builder.Configuration);
 builder.Services.AddJwtAuthentication(builder.Configuration);
 
-// middleware
+// user permission middleware
 builder.Services.AddTransient<PermissionMiddleware>();
 
 builder.Services.AddControllersWithViews();
@@ -38,7 +38,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// middleware
+// user permission middleware
 app.UseMiddleware<PermissionMiddleware>();
 
 app.UseZustExceptionHandler();

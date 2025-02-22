@@ -50,7 +50,7 @@ public class CommentLikeService : ICommentLikeService
                 SenderUserId = user.Id,
                 SenderUserName = user.UserName,
                 CommentId = postComment.Id,
-                CommentedUserId = postComment.CommentedUserId
+                CommentedUserId = postComment.CommentedUserId.Value
             }
         };
 

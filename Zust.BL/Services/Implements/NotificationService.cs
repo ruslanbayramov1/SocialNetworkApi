@@ -69,7 +69,7 @@ public class NotificationService : INotificationService
             {
                 SenderId = dto.SenderUserId,
                 SenderName= dto.SenderUserName,
-                ReceiverId = dto.CommentedUserId,
+                ReceiverId = dto.CommentedUserId.Value,
                 RelatedEntityId = dto.CommentId.ToString(),
                 Type = NotificationTypes.Comment,
                 Action = NotificationActions.Reply,

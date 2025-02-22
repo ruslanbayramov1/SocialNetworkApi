@@ -12,11 +12,11 @@ public class PostComment : BaseEntity
     /// <summary>
     /// The post that the comment belongs to.
     /// </summary>
-    public Post Post { get; set; }
+    public Post? Post { get; set; }
     /// <summary>
     /// The ID of the post that the comment belongs to.
     /// </summary>
-    public Guid PostId { get; set; }
+    public Guid? PostId { get; set; }
 
     /// <summary>
     /// Self join and the ID of the parent comment if this is a reply.
@@ -36,11 +36,11 @@ public class PostComment : BaseEntity
     /// <summary>
     /// The user who wrote the comment.
     /// </summary>
-    public User CommentedUser { get; set; }
+    public User? CommentedUser { get; set; }
     /// <summary>
     /// The ID of the user who wrote the comment.
     /// </summary>
-    public Guid CommentedUserId { get; set; }
+    public Guid? CommentedUserId { get; set; }
 
     /// <summary>
     /// The collection of likes received on the comment.

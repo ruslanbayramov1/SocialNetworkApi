@@ -13,18 +13,18 @@ public class Post : BaseEntity
     /// <summary>
     /// The user who created the post.
     /// </summary>
-    public User PostedUser { get; set; }
+    public User? PostedUser { get; set; }
     /// <summary>
     /// The ID of the user who created the post.
     /// </summary>
-    public Guid PostedUserId { get; set; }
+    public Guid? PostedUserId { get; set; }
 
     /// <summary>
     /// The collection of likes received on the post.
     /// </summary>
-    public ICollection<PostLike>? Likes { get; set; } = new List<PostLike>();
+    public ICollection<PostLike> Likes { get; set; } = new List<PostLike>();
     /// <summary>
     /// The collection of comments made on the post.
     /// </summary>
-    public ICollection<PostComment>? Comments { get; set; } = new List<PostComment>();
+    public ICollection<PostComment> Comments { get; set; } = new List<PostComment>();
 }

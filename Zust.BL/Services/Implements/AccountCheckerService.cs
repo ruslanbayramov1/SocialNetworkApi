@@ -83,7 +83,7 @@ public class AccountCheckerService : IAccountCheckerService
     public async Task<Guid> GetPostOwnerIdAsync(Guid postId)
     {
         var post = await _postService.GetPostModelByIdAsync(postId);
-        return post.PostedUserId;
+        return post.PostedUserId.Value;
     }
 
     public async Task<Guid> GetPostOwnerIdOnCommentAsync(Guid commentId)

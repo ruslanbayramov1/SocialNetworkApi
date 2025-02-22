@@ -12,8 +12,8 @@ using Zust.DAL.Contexts;
 namespace Zust.DAL.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250222082054_CascadeOperationsv3")]
-    partial class CascadeOperationsv3
+    [Migration("20250222083802_SetNullsAdded")]
+    partial class SetNullsAdded
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -226,7 +226,7 @@ namespace Zust.DAL.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<Guid>("PostedUserId")
+                    b.Property<Guid?>("PostedUserId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime?>("UpdatedAt")
@@ -245,7 +245,7 @@ namespace Zust.DAL.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("CommentedUserId")
+                    b.Property<Guid?>("CommentedUserId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Content")
@@ -267,7 +267,7 @@ namespace Zust.DAL.Migrations
                     b.Property<Guid?>("ParentCommentId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("PostId")
+                    b.Property<Guid?>("PostId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime?>("UpdatedAt")
@@ -301,10 +301,10 @@ namespace Zust.DAL.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<Guid>("LikedUserId")
+                    b.Property<Guid?>("LikedUserId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("PostCommentId")
+                    b.Property<Guid?>("PostCommentId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime?>("UpdatedAt")
@@ -336,10 +336,10 @@ namespace Zust.DAL.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<Guid>("LikedUserId")
+                    b.Property<Guid?>("LikedUserId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("PostId")
+                    b.Property<Guid?>("PostId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime?>("UpdatedAt")
@@ -648,9 +648,7 @@ namespace Zust.DAL.Migrations
                 {
                     b.HasOne("Zust.Core.Entities.User", "PostedUser")
                         .WithMany("Posts")
-                        .HasForeignKey("PostedUserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .HasForeignKey("PostedUserId");
 
                     b.Navigation("PostedUser");
                 });
@@ -659,20 +657,16 @@ namespace Zust.DAL.Migrations
                 {
                     b.HasOne("Zust.Core.Entities.User", "CommentedUser")
                         .WithMany("PostComments")
-                        .HasForeignKey("CommentedUserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .HasForeignKey("CommentedUserId");
 
                     b.HasOne("Zust.Core.Entities.PostComment", "ParentComment")
                         .WithMany("Replies")
-                        .HasForeignKey("ParentCommentId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .HasForeignKey("ParentCommentId");
 
                     b.HasOne("Zust.Core.Entities.Post", "Post")
                         .WithMany("Comments")
                         .HasForeignKey("PostId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.Navigation("CommentedUser");
 
@@ -685,15 +679,12 @@ namespace Zust.DAL.Migrations
                 {
                     b.HasOne("Zust.Core.Entities.User", "LikedUser")
                         .WithMany("PostCommentLikes")
-                        .HasForeignKey("LikedUserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .HasForeignKey("LikedUserId");
 
                     b.HasOne("Zust.Core.Entities.PostComment", "PostComment")
                         .WithMany("Likes")
                         .HasForeignKey("PostCommentId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.Navigation("LikedUser");
 
@@ -704,15 +695,12 @@ namespace Zust.DAL.Migrations
                 {
                     b.HasOne("Zust.Core.Entities.User", "LikedUser")
                         .WithMany("PostLikes")
-                        .HasForeignKey("LikedUserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .HasForeignKey("LikedUserId");
 
                     b.HasOne("Zust.Core.Entities.Post", "Post")
                         .WithMany("Likes")
                         .HasForeignKey("PostId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.Navigation("LikedUser");
 
