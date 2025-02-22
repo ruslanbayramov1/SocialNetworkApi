@@ -30,7 +30,7 @@ public class PostsController : ControllerBase
 
     [HttpGet]
     [Route("User/{userId:guid}")]
-    public async Task<IActionResult> GetUserPosts(Guid userId)
+    public async Task<IActionResult> GetUserPosts(Guid userId, [FromHeader]int? start = 0, [FromHeader]int? end = 9)
     {
         var data = await _postService.GetUserPostsAsync(userId);
         return Ok(data);
@@ -64,7 +64,7 @@ public class PostsController : ControllerBase
 
     [HttpGet]
     [Route("Comments/{postId:guid}")]
-    public async Task<IActionResult> GetPostComments(Guid postId)
+    public async Task<IActionResult> GetPostComments(Guid postId, [FromHeader] int? start = 0, [FromHeader] int? end = 9)
     {
         var data = await _postCommentService.GetCommentsAsync(postId);
         return Ok(data);
@@ -98,7 +98,7 @@ public class PostsController : ControllerBase
 
     [HttpGet]
     [Route("Replies/{commentId:guid}")]
-    public async Task<IActionResult> GetCommentReplies(Guid commentId)
+    public async Task<IActionResult> GetCommentReplies(Guid commentId, [FromHeader] int? start = 0, [FromHeader] int? end = 9)
     {
         var data = await _postCommentService.GetRepliesAsync(commentId);
         return Ok(data);
@@ -106,7 +106,7 @@ public class PostsController : ControllerBase
 
     [HttpGet]
     [Route("Likes/{postId:guid}")]
-    public async Task<IActionResult> GetPostLikes(Guid postId)
+    public async Task<IActionResult> GetPostLikes(Guid postId, [FromHeader] int? start = 0, [FromHeader] int? end = 9)
     {
         var data = await _postLikeService.GetPostLikes(postId);
         return Ok(data);
@@ -133,7 +133,7 @@ public class PostsController : ControllerBase
 
     [HttpGet]
     [Route("Comment/Likes/{commentId:guid}")]
-    public async Task<IActionResult> GetCommentLikes(Guid commentId)
+    public async Task<IActionResult> GetCommentLikes(Guid commentId, [FromHeader] int? start = 0, [FromHeader] int? end = 9)
     {
         var data = await _commentLikeService.GetCommentLikes(commentId);
         return Ok(data);

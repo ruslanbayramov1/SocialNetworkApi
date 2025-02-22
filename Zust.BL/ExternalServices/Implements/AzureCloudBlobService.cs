@@ -48,4 +48,13 @@ public class AzureBlobCloudService : IAzureCloudBlobService
 
         return blobClient.Uri.ToString();
     }
+
+    public async Task DeleteImageAsync(string path)
+    {
+        Uri uri = new Uri(path);
+        string blobPath = string.Join("", uri.Segments.Skip(2));
+
+        BlobClient blobClient = _containerClient.GetBlobClient(blobPath);
+        await blobClient.DeleteIfExistsAsync();
+    }
 }

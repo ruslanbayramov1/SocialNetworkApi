@@ -202,6 +202,10 @@ public class PostService : IPostService
         if (post == null)
             throw new NotFoundException<Post>();
 
+        if (!String.IsNullOrEmpty(post.ImageUrl))
+        { 
+            await _azureCloudBlobService.DeleteImageAsync(post.ImageUrl);
+        }
         await _postRepository.RemoveAsync(postId);
         await _postRepository.SaveAsync();
     }

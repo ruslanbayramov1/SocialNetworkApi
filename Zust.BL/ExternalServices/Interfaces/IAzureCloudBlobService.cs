@@ -6,4 +6,5 @@ namespace Zust.BL.ExternalServices.Interfaces;
 public interface IAzureCloudBlobService
 {
     Task<string> UploadImageAsync(IFormFile file, AzureFolderDestinations folderDestinations);
+    Task DeleteImageAsync(string path);
 }
