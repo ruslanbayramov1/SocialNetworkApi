@@ -130,4 +130,18 @@ public class FollowService : IFollowService
 
         return null;
     }
+
+    public async Task<string> RemoveAsync(Guid userId)
+    {
+        var user = await _userRepo.GetByIdAsync(userId);
+        if (user == null) throw new NotFoundException<User>();
+
+        var res = await _followRepo.GetByExpressionAsync(x => x.FollowingId == _userClaimService.GetId() && x.FollowerId == user.Id);
+        if (res == null) throw new NotFoundException<Follow>();
+
+        await _followRepo.RemoveAsync(res.Id);
+        await _followRepo.SaveAsync();
+
+        return $"User {user.UserName} removed from followers";
+    }
 }

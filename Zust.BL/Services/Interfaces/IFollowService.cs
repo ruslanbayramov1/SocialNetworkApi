@@ -10,4 +10,5 @@ public interface IFollowService
     Task DeleteAsync(Guid id);
     Task<Guid?> IsFollowedBefore(FollowCreateDto dto);
     Task<string> ApproveAndCreate(Guid notificationId);
+    Task<string> RemoveAsync(Guid userId);
 }

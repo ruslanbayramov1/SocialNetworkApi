@@ -95,4 +95,12 @@ public class FollowsController : ControllerBase
         await _notificationService.UpdateNotificationHiddenInfo(dto.NotificationId);
         return StatusCode(StatusCodes.Status202Accepted, res);
     }
+
+    [HttpDelete]
+    [Route("[action]/{userId:guid}")]
+    public async Task<IActionResult> Remove(Guid userId)
+    {
+        await _followService.RemoveAsync(userId);
+        return NoContent();
+    }
 }
