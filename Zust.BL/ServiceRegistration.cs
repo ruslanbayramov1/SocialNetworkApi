@@ -38,6 +38,7 @@ public static class ServiceRegistration
         services.AddScoped<INotificationService, NotificationService>();
         services.AddScoped<IFollowService, FollowService>();
         services.AddScoped<IAccountCheckerService, AccountCheckerService>();
+        services.AddScoped<IAiAnalyzeService, AiAnalyzeService>();
 
         // external services
         services.AddScoped<IUserClaimService, UserClaimService>();

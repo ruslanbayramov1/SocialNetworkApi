@@ -57,12 +57,12 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 
         builder
             .Property(x => x.ProfileImageUrl)
-            .HasDefaultValue("https://finalprojectolympus.blob.core.windows.net/images/defaultuserimage.jpg")
+            .HasDefaultValue("https://zuststorage.blob.core.windows.net/media/defaultuserimage.jpg")
             .IsRequired(false);
 
         builder
             .Property(x => x.CoverImageUrl)
-            .HasDefaultValue("https://finalprojectolympus.blob.core.windows.net/images/defaultusercover.jpg")
+            .HasDefaultValue("https://zuststorage.blob.core.windows.net/media/defaultusercover.jpg")
             .IsRequired(false);
 
         builder

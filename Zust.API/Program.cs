@@ -17,6 +17,7 @@ builder.Services.AddJwtAuthentication(builder.Configuration);
 builder.Services.AddTransient<PermissionMiddleware>();
 
 builder.Services.AddControllersWithViews();
+builder.Services.AddHttpClient();
 builder.Services.AddDbContext(builder.Configuration);
 builder.Services.AddRepositories();
 builder.Services.AddServices();

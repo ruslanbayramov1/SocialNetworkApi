@@ -25,8 +25,8 @@ public class User : BaseEntity
     public Language? Language { get; set; }
     public Guid? LanguageId { get; set; }
     public string? Address { get; set; }
-    public string? ProfileImageUrl { get; set; } = "https://finalprojectolympus.blob.core.windows.net/images/defaultuserimage.jpg";
-    public string? CoverImageUrl { get; set; } = "https://finalprojectolympus.blob.core.windows.net/images/defaultusercover.jpg";
+    public string? ProfileImageUrl { get; set; } = "https://zuststorage.blob.core.windows.net/media/defaultuserimage.jpg";
+    public string? CoverImageUrl { get; set; } = "https://zuststorage.blob.core.windows.net/media/defaultusercover.jpg";
     public bool IsEmailConfirmed { get; set; }
     public bool IsPrivate { get; set; }
     public bool IsBanned { get; set; }

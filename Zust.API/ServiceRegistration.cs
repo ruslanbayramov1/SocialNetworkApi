@@ -19,6 +19,7 @@ public static class ServiceRegistration
         services.Configure<AdminOption>(configuration.GetSection(AdminOption.Position));
         services.Configure<MongoOption>(configuration.GetSection(MongoOption.Position));
         services.Configure<ApiOption>(configuration.GetSection(ApiOption.Position));
+        services.Configure<OpenAiOption>(configuration.GetSection(OpenAiOption.Position));
         return services;
     }
 
