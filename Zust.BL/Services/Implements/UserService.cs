@@ -10,6 +10,7 @@ using Zust.BL.Services.Interfaces;
 using Zust.Core.Entities;
 using Zust.Core.Enums;
 using Zust.Core.Interfaces.Repositories;
+using static System.Net.WebRequestMethods;
 
 namespace Zust.BL.Services.Implements;
 
@@ -189,5 +190,27 @@ public class UserService : IUserService
         if (user == null) throw new NotFoundException<User>();
 
         return user;
+    }
+
+    public async Task DeleteProfileImageAsync()
+    {
+        var user = await GetById(_userClaimService.GetId());
+        if (user.ProfileImageUrl != "https://zuststorage.blob.core.windows.net/media/defaultuserimage.jpg")
+        {
+            await _azureCloudBlobService.DeleteImageAsync(user.ProfileImageUrl);
+        }
+        user.ProfileImageUrl = "https://zuststorage.blob.core.windows.net/media/defaultuserimage.jpg";
+        await _userRepo.SaveAsync();
+    }
+
+    public async Task DeleteProfileBannerAsync()
+    {
+        var user = await GetById(_userClaimService.GetId());
+        if (user.CoverImageUrl != "https://zuststorage.blob.core.windows.net/media/defaultusercover.jpg")
+        {
+            await _azureCloudBlobService.DeleteImageAsync(user.CoverImageUrl);
+        }
+        user.CoverImageUrl = "https://zuststorage.blob.core.windows.net/media/defaultusercover.jpg";
+        await _userRepo.SaveAsync();
     }
 }

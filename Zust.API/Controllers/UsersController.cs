@@ -56,7 +56,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpPost]
-    [Route("Update/ProfileImage")]
+    [Route("Image")]
     public async Task<IActionResult> UpdateProfileImage(IFormFile image)
     {
         await _userService.UpdateProfileImage(image);
@@ -64,10 +64,26 @@ public class UsersController : ControllerBase
     }
 
     [HttpPost]
-    [Route("Update/ProfileBanner")]
+    [Route("Banner")]
     public async Task<IActionResult> UpdateProfileBanner(IFormFile banner)
     {
         await _userService.UpdateProfileBanner(banner);
+        return Created();
+    }
+
+    [HttpDelete]
+    [Route("Image")]
+    public async Task<IActionResult> DeleteProfileImage()
+    {
+        await _userService.DeleteProfileImageAsync();
+        return Created();
+    }
+
+    [HttpDelete]
+    [Route("Banner")]
+    public async Task<IActionResult> DeleteProfileBanner()
+    {
+        await _userService.DeleteProfileBannerAsync();
         return Created();
     }
 

@@ -1,11 +1,9 @@
-﻿using Zust.BL.Constants;
-using Zust.BL.DTOs.Notifications;
+﻿using Zust.BL.DTOs.Notifications;
 using Zust.BL.DTOs.PostComments;
 using Zust.BL.DTOs.Posts;
 using Zust.BL.DTOs.Users;
 using Zust.BL.Enums;
 using Zust.BL.Exceptions.Common;
-using Zust.BL.Exceptions.Files;
 using Zust.BL.ExternalServices.Interfaces;
 using Zust.BL.Helpers;
 using Zust.BL.Responses.Posts;
@@ -29,6 +27,45 @@ public class PostService : IPostService
         _userRepo = userRepo;
         _azureCloudBlobService = azureCloudBlobService;
         _userService = userService;
+    }
+    public async Task<List<FeedPostGetDto>> GetFeedPostsAsync()
+    {
+        var curUserId = _userClaimService.GetId();
+        List<FeedPostGetDto>? posts = await _postRepository.GetWhereAsync(
+            x =>
+            x.PostedUser!.IsPrivate == true ? x.PostedUser.Followers.Select(f => f.FollowerId).Contains(curUserId) : true
+            &&
+            x.PostedUserId != curUserId,
+            x => new FeedPostGetDto
+        {
+            Id = x.Id,
+            Content = x.Content,
+            MediaUrl = x.MediaUrl,
+            LikeCount = x.Likes.Count(),
+            PostedUserId = x.PostedUserId!.Value,
+            Comments = x.Comments
+            .Where(y => y.ParentCommentId == null)
+            .Select(y => new PostCommentGetDto
+            {
+                Id = y.Id,
+                PostId = y.PostId!.Value,
+                Content = y.Content,
+                ParentCommentId = y.ParentCommentId,
+                LikeCount = y.Likes.Count(),
+                ReplyCount = y.Replies.Count(),
+                CommentedUser = new UserCommentGetDto
+                {
+                    Id = y.CommentedUser!.Id,
+                    FirstName = y.CommentedUser.FirstName,
+                    LastName = y.CommentedUser.LastName,
+                    CoverImageUrl = y.CommentedUser.CoverImageUrl,
+                    ProfileImageUrl = y.CommentedUser.ProfileImageUrl,
+                    UserName = y.CommentedUser.UserName,
+                },
+            }).Take(9).ToList(),
+        });
+
+        return posts;
     }
 
     public async Task<List<PostGetDto>> GetUserPostsAsync(Guid userId)

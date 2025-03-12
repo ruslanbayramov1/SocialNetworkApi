@@ -15,6 +15,8 @@ public interface IUserService
     Task UpdateProfile(UserProfileUpdateDto dto);
     Task UpdateProfileImage(IFormFile image);
     Task UpdateProfileBanner(IFormFile banner);
+    Task DeleteProfileImageAsync();
+    Task DeleteProfileBannerAsync();
     Task<User> GetById(Guid userId);
     Task<User> GetByName(string userName);
 }

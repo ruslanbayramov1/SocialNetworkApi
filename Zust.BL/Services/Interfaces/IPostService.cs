@@ -6,6 +6,7 @@ namespace Zust.BL.Services.Interfaces;
 
 public interface IPostService
 {
+    Task<List<FeedPostGetDto>> GetFeedPostsAsync();
     Task<List<PostGetDto>> GetUserPostsAsync(Guid userId);
     Task<PostGetDto> GetPostByIdAsync(Guid postId);
     Task<PostCreateResponse> CreatePostAsync(PostCreateDto dto);
