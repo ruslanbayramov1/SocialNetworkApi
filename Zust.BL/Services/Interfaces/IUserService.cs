@@ -19,4 +19,5 @@ public interface IUserService
     Task DeleteProfileBannerAsync();
     Task<User> GetById(Guid userId);
     Task<User> GetByName(string userName);
+    Task<string> ChangeVisibilityAsync();
 }

@@ -1,16 +1,13 @@
 ﻿using Microsoft.AspNetCore.Http;
-using Zust.BL.Constants;
 using Zust.BL.DTOs.Users;
 using Zust.BL.Enums;
 using Zust.BL.Exceptions.Common;
-using Zust.BL.Exceptions.Files;
 using Zust.BL.ExternalServices.Interfaces;
 using Zust.BL.Helpers;
 using Zust.BL.Services.Interfaces;
 using Zust.Core.Entities;
 using Zust.Core.Enums;
 using Zust.Core.Interfaces.Repositories;
-using static System.Net.WebRequestMethods;
 
 namespace Zust.BL.Services.Implements;
 
@@ -212,5 +209,23 @@ public class UserService : IUserService
         }
         user.CoverImageUrl = "https://zuststorage.blob.core.windows.net/media/defaultusercover.jpg";
         await _userRepo.SaveAsync();
+    }
+
+    public async Task<string> ChangeVisibilityAsync()
+    {
+        var user = await _userRepo.GetByIdAsync(_userClaimService.GetId());
+        if (user.IsPrivate == true)
+        {
+            user.IsPrivate = false;
+            await _userRepo.SaveAsync();
+            return "Visibility changed to public";
+        }
+        else
+        { 
+            user.IsPrivate = true;
+            await _userRepo.SaveAsync();
+            return "Visibility changed to private";
+        }
+
     }
 }

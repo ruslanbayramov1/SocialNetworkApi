@@ -94,4 +94,12 @@ public class UsersController : ControllerBase
         var data = await _notificationService.GetUserNotifications();
         return Ok(data);
     }
+
+    [HttpPost]
+    [Route("[action]")]
+    public async Task<IActionResult> Visibility()
+    {
+        var data = await _userService.ChangeVisibilityAsync();
+        return Ok(data);
+    }
 }
